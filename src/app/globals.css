@@ -1,26 +1,246 @@
 @import "tailwindcss";
 
+/* ─── Theme tokens ─── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #dbeafe;
+  --red: #dc2626;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --cream: #fefce8;
+  --ink: #1c1917;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-display: var(--font-lilita);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  font-family: var(--font-geist-sans, Arial, sans-serif);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* ─── Prompt background ─── */
+.bg-party {
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, #93c5fd 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+}
+
+/* ─── Component styles ─── */
+.card-panel {
+  background: var(--cream);
+  border: 4px solid var(--ink);
+  border-radius: 4px;
+  padding: 2.5rem 2rem;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.btn-yes {
+  background: var(--red);
+  color: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  padding: 0.8rem 2.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-family: var(--font-lilita, sans-serif);
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-yes:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.btn-yes:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.btn-no {
+  background: var(--blue);
+  color: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  padding: 0.6rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+  line-height: 1.25;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.btn-no:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.btn-no:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.music-btn {
+  background: var(--green);
+  color: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  box-shadow: 3px 3px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.music-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.music-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* ─── Touch & focus ─── */
+.btn-yes,
+.btn-no,
+.music-btn {
+  touch-action: manipulation;
+}
+
+.btn-yes:focus-visible,
+.btn-no:focus-visible,
+.music-btn:focus-visible {
+  outline: 3px dashed var(--ink);
+  outline-offset: 3px;
+}
+
+/* ─── Burst ring ─── */
+.burst-ring {
+  width: 200px;
+  height: 200px;
+  border: 8px solid var(--red);
+  border-radius: 50%;
+  animation: burst-ring 0.9s ease-out forwards;
+}
+
+/* ─── Keyframes ─── */
+@keyframes float-up {
+  0% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-130vh) rotate(calc(var(--rot, 0deg) + 25deg));
+    opacity: 0.6;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(var(--rot, 0deg));
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(var(--dx, 70px)) rotate(calc(var(--rot, 0deg) + 540deg));
+    opacity: 0.6;
+  }
+}
+
+@keyframes bounce-cake {
+  0%, 100% { transform: translateY(0) scale(1); }
+  45%       { transform: translateY(-20px) scale(1.08); }
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes burst-ring {
+  0%   { transform: scale(0); opacity: 0.9; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20%       { transform: translateX(-7px) rotate(-4deg); }
+  40%       { transform: translateX(7px) rotate(4deg); }
+  60%       { transform: translateX(-4px) rotate(-2deg); }
+  80%       { transform: translateX(4px) rotate(2deg); }
+}
+
+@keyframes pop-in {
+  0%   { transform: scale(0.4); opacity: 0; }
+  70%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-away {
+  0%   { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(100px); opacity: 0; }
+}
+
+/* ─── Animation utility classes ─── */
+.anim-float-up {
+  animation: float-up 8s linear forwards;
+}
+
+.anim-spin-slow {
+  animation: spin-slow 5s linear infinite;
+}
+
+.anim-confetti-fall {
+  animation: confetti-fall 6s linear forwards;
+}
+
+.anim-bounce-cake {
+  animation: bounce-cake 1s ease-in-out infinite;
+}
+
+.anim-marquee {
+  display: inline-block;
+  animation: marquee-scroll 14s linear infinite;
+}
+
+.anim-wiggle {
+  animation: wiggle 0.6s ease-in-out;
+}
+
+.anim-slide-away {
+  animation: slide-away 0.4s ease-in forwards;
+}
+
+.anim-pop-in {
+  animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .anim-float-up,
+  .anim-spin-slow,
+  .anim-confetti-fall,
+  .anim-bounce-cake,
+  .anim-marquee,
+  .anim-wiggle,
+  .anim-slide-away,
+  .anim-pop-in,
+  .burst-ring {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
