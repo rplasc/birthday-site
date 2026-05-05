@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 
 type Phase = "prompt" | "celebrating";
 type NoState = "default" | "wiggling" | "sliding" | "gone";
@@ -123,6 +123,12 @@ export default function Home() {
   const [decorations, setDecorations] = useState<Decoration[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showBurst, setShowBurst] = useState(false);
+  const [name, setName] = useState<string | null>(null);
+  useLayoutEffect(() => {
+    const n = new URLSearchParams(window.location.search).get("name")?.trim();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (n) setName(n);
+  }, []);
 
   const ctxRef = useRef<AudioContext | null>(null);
   const stopLoopRef = useRef<(() => void) | null>(null);
@@ -192,7 +198,7 @@ export default function Home() {
                 color: "var(--ink)",
               }}
             >
-              Is it your<br />birthday?
+              {name ? <>{name},<br />is it your birthday?</> : <>Is it your<br />birthday?</>}
             </h1>
             <div className="flex items-center justify-center gap-5 flex-wrap">
               <button onClick={handleYes} className="btn-yes">
@@ -210,7 +216,7 @@ export default function Home() {
                     .filter(Boolean)
                     .join(" ")}
                 >
-                  {noState === "sliding" ? "Come back when it is" : "No"}
+                  {noState === "sliding" ? "Birthday-specific page." : "No"}
                 </button>
               )}
             </div>
@@ -330,7 +336,7 @@ export default function Home() {
             textShadow: "4px 4px 0 var(--red)",
           }}
         >
-          Happy<br />Birthday!
+          {name ? <>Happy Birthday,<br />{name}!</> : <>Happy<br />Birthday!</>}
         </h1>
         <p
           className="text-lg font-semibold tracking-wide"
@@ -346,7 +352,7 @@ export default function Home() {
         aria-label={isPlaying ? "Pause music" : "Play music"}
         className="music-btn fixed bottom-5 right-5 z-30"
       >
-        {isPlaying ? "♫ Music on" : "♪ Music off"}
+        {isPlaying ? "♫ Pause" : "♪ Play"}
       </button>
     </div>
   );
