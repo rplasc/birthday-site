@@ -144,8 +144,6 @@ function startLoop(ctx: AudioContext, config: MusicConfig): () => void {
   };
 }
 
-const MARQUEE_PARTY = "🎉 HAPPY BIRTHDAY! 🎉   ".repeat(24);
-
 export default function Home() {
   const [phase, setPhase] = useState<Phase>("prompt");
   const [noState, setNoState] = useState<NoState>("default");
@@ -174,6 +172,7 @@ export default function Home() {
 
   const themeDef = THEMES[theme];
   const marqueeTease = themeDef.teaseText.repeat(24);
+  const marqueeCelebrate = themeDef.celebrateMarquee.repeat(24);
 
   const [showShare, setShowShare] = useState(false);
   const [shareName, setShareName] = useState("");
@@ -322,7 +321,7 @@ export default function Home() {
                     .filter(Boolean)
                     .join(" ")}
                 >
-                  {noState === "sliding" ? "Birthday-specific page." : "No"}
+                  {noState === "sliding" ? "Wrong device." : "No"}
                 </button>
               )}
             </div>
@@ -385,7 +384,7 @@ export default function Home() {
           className="anim-marquee whitespace-nowrap font-bold text-base tracking-widest"
           style={{ color: "var(--btn-text)" }}
         >
-          {MARQUEE_PARTY}
+          {marqueeCelebrate}
         </div>
       </div>
 
@@ -467,7 +466,7 @@ export default function Home() {
           className="anim-bounce-cake select-none mb-4 block"
           style={{ fontSize: "clamp(4rem, 15vw, 6rem)" }}
           role="img"
-          aria-label="Celebration"
+          aria-label={`${themeDef.name} celebration`}
         >
           {themeDef.hero}
         </span>
@@ -483,8 +482,8 @@ export default function Home() {
           {name ? <>Happy Birthday,<br />{name}!</> : <>Happy<br />Birthday!</>}
         </h1>
         <p
-          className="text-xl font-semibold tracking-wide anim-caption-rise"
-          style={{ color: "var(--ink-soft)" }}
+          className="text-2xl font-semibold tracking-wide anim-caption-rise"
+          style={{ color: "var(--ink)" }}
         >
           {themeDef.celebrateCaption}
         </p>

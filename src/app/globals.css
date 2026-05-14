@@ -455,7 +455,7 @@ body {
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;
-  padding: 0.25rem;
+  padding: 0.6rem 0.25rem;
   transition: color 0.1s;
 }
 
@@ -481,8 +481,8 @@ body {
 }
 
 .theme-swatch {
-  width: 1.6rem;
-  height: 1.6rem;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 999px;
   border: 2px solid var(--ink);
   cursor: pointer;
