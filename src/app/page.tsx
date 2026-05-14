@@ -24,6 +24,13 @@ function rand(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
 
+function buildShareUrl(nameVal: string): string {
+  if (typeof window === "undefined") return "";
+  const base = `${window.location.origin}${window.location.pathname}`;
+  const trimmed = nameVal.trim();
+  return trimmed ? `${base}?name=${encodeURIComponent(trimmed)}` : base;
+}
+
 function generateDecorations(): Decoration[] {
   const list: Decoration[] = [];
   let id = 0;
@@ -130,6 +137,10 @@ export default function Home() {
     if (n) setName(n);
   }, []);
 
+  const [showShare, setShowShare] = useState(false);
+  const [shareName, setShareName] = useState("");
+  const [copied, setCopied] = useState(false);
+
   const ctxRef = useRef<AudioContext | null>(null);
   const stopLoopRef = useRef<(() => void) | null>(null);
 
@@ -168,6 +179,16 @@ export default function Home() {
     else startSong();
   }, [isPlaying, startSong, stopSong]);
 
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(buildShareUrl(shareName));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard not available
+    }
+  }, [shareName]);
+
   useEffect(() => () => { stopSong(); }, [stopSong]);
 
   /* ── Prompt screen ── */
@@ -189,7 +210,7 @@ export default function Home() {
 
         {/* Center card */}
         <div className="flex flex-1 items-center justify-center px-6 py-12">
-          <div className="card-panel max-w-sm w-full text-center">
+          <div className="card-panel anim-card-rise max-w-sm w-full text-center">
             <h1
               className="leading-tight mb-8"
               style={{
@@ -222,6 +243,42 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <button onClick={() => setShowShare(true)} className="music-btn" style={{ position: "fixed", bottom: "1.25rem", left: "1.25rem", background: "var(--ink)" }}>
+          🔗 Share a link
+        </button>
+        {showShare && (
+          <div className="modal-backdrop" onClick={() => { setShowShare(false); setCopied(false); }}>
+            <div className="card-panel modal-card" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={() => { setShowShare(false); setCopied(false); }} aria-label="Close">✕</button>
+              <h2 className="modal-title">Send the party! 🎉</h2>
+              <label className="modal-label" htmlFor="share-name">Who&apos;s celebrating?</label>
+              <input
+                id="share-name"
+                className="share-input"
+                type="text"
+                placeholder="Their name (optional)"
+                value={shareName}
+                onChange={(e) => setShareName(e.target.value)}
+                maxLength={40}
+              />
+              {shareName.trim() && (
+                <p className="modal-preview">
+                  They&apos;ll see: <em>Happy Birthday, {shareName.trim()}! 🎂</em>
+                </p>
+              )}
+              <button
+                className="btn-copy-link"
+                onClick={handleCopy}
+                style={copied ? { background: "var(--green)" } : undefined}
+              >
+                {copied ? "✓ Copied! Now send it 🎉" : "🔗 Copy link"}
+              </button>
+              <button className="btn-maybe-later" onClick={() => { setShowShare(false); setCopied(false); }}>
+                maybe later
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
