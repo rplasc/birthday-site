@@ -47,7 +47,7 @@ function generateDecorations(palette: string[]): Decoration[] {
       color: color(), rotate: rand(-20, 20), size: rand(42, 68), dx: 0,
     });
   }
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 4; i++) {
     list.push({
       id: id++, type: "star",
       x: rand(2, 98), y: rand(10, 85),
@@ -154,13 +154,17 @@ export default function Home() {
   const [showBurst, setShowBurst] = useState(false);
   const [name, setName] = useState<string | null>(null);
   const [theme, setTheme] = useState<Theme>("default");
+  const [themeIsFixed, setThemeIsFixed] = useState(false);
   useLayoutEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const n = params.get("name")?.trim();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (n) setName(n);
     const t = params.get("theme");
-    if (isTheme(t)) setTheme(t);
+    if (isTheme(t)) {
+      setTheme(t);
+      setThemeIsFixed(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -251,9 +255,9 @@ export default function Home() {
 
   useEffect(() => () => { stopSong(); }, [stopSong]);
 
-  const renderThemePicker = (selected: Theme, onPick: (t: Theme) => void) => (
+  const renderThemePicker = (selected: Theme, onPick: (t: Theme) => void, label = "Vibe") => (
     <div className="theme-picker" role="radiogroup" aria-label="Theme">
-      <span className="theme-picker-label">Vibe</span>
+      {label && <span className="theme-picker-label">{label}</span>}
       {THEME_KEYS.map((k) => (
         <button
           key={k}
@@ -275,13 +279,10 @@ export default function Home() {
     return (
       <div className="bg-party min-h-screen flex flex-col overflow-hidden">
         {/* Marquee bar */}
-        <div
-          className="overflow-hidden"
-          style={{ background: "var(--red)", padding: "8px 0" }}
-        >
+        <div className="marquee-bar">
           <div
             className="anim-marquee whitespace-nowrap font-bold tracking-widest text-sm"
-            style={{ color: "var(--cream)" }}
+            style={{ color: "var(--btn-text)" }}
           >
             {marqueeTease}
           </div>
@@ -291,7 +292,7 @@ export default function Home() {
         <div className="flex flex-1 items-center justify-center px-6 py-12">
           <div className="card-panel anim-card-rise max-w-sm w-full text-center">
             <h1
-              className="leading-tight mb-8"
+              className="leading-tight mb-5"
               style={{
                 fontFamily: "var(--font-lilita, sans-serif)",
                 fontSize: "clamp(2rem, 8vw, 3.25rem)",
@@ -300,6 +301,11 @@ export default function Home() {
             >
               {name ? <>{name},<br />is it your birthday?</> : <>Is it your<br />birthday?</>}
             </h1>
+            {!themeIsFixed && (
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.75rem" }}>
+                {renderThemePicker(theme, pickTheme)}
+              </div>
+            )}
             <div className="flex items-center justify-center gap-5 flex-wrap">
               <button onClick={handleYes} className="btn-yes">
                 Yes
@@ -322,17 +328,22 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div style={{ position: "fixed", bottom: "1.25rem", left: "1.25rem", display: "flex", flexDirection: "column", gap: "0.6rem", alignItems: "flex-start", zIndex: 30 }}>
-          {renderThemePicker(theme, pickTheme)}
-          <button onClick={openShare} className="music-btn" style={{ background: "var(--ink)" }}>
-            🔗 Share a link
-          </button>
-        </div>
+        <button
+          onClick={openShare}
+          className="music-btn"
+          style={{ position: "fixed", bottom: "1.25rem", left: "1.25rem", zIndex: 30, background: "var(--ink)", color: "var(--cream)" }}
+        >
+          🔗 Share a link
+        </button>
         {showShare && (
           <div className="modal-backdrop" onClick={() => { setShowShare(false); setCopied(false); }}>
             <div className="card-panel modal-card" onClick={(e) => e.stopPropagation()}>
               <button className="modal-close" onClick={() => { setShowShare(false); setCopied(false); }} aria-label="Close">✕</button>
-              <h2 className="modal-title">{themeDef.modalTitle}</h2>
+              <h2 className="modal-title">{THEMES[shareTheme].modalTitle}</h2>
+              <div className="modal-vibe">
+                <label className="modal-label">Pick their vibe</label>
+                {renderThemePicker(shareTheme, setShareTheme, "")}
+              </div>
               <label className="modal-label" htmlFor="share-name">Who&apos;s celebrating?</label>
               <input
                 id="share-name"
@@ -345,13 +356,9 @@ export default function Home() {
               />
               {shareName.trim() && (
                 <p className="modal-preview">
-                  They&apos;ll see: <em>Happy Birthday, {shareName.trim()}! 🎂</em>
+                  They&apos;ll see: <em>Happy Birthday, {shareName.trim()}! {THEMES[shareTheme].hero}</em>
                 </p>
               )}
-              <div className="modal-vibe">
-                <label className="modal-label">Pick a vibe</label>
-                {renderThemePicker(shareTheme, setShareTheme)}
-              </div>
               <button
                 className="btn-copy-link"
                 onClick={handleCopy}
@@ -371,18 +378,12 @@ export default function Home() {
 
   /* ── Celebration screen ── */
   return (
-    <div
-      className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center"
-      style={{ background: "var(--bg)" }}
-    >
+    <div className="bg-celebrate relative min-h-screen overflow-hidden flex flex-col items-center justify-center">
       {/* Marquee bar */}
-      <div
-        className="absolute top-0 left-0 right-0 overflow-hidden z-20"
-        style={{ background: "var(--red)", padding: "8px 0" }}
-      >
+      <div className="marquee-bar absolute top-0 left-0 right-0 z-20">
         <div
           className="anim-marquee whitespace-nowrap font-bold text-base tracking-widest"
-          style={{ color: "var(--cream)" }}
+          style={{ color: "var(--btn-text)" }}
         >
           {MARQUEE_PARTY}
         </div>
@@ -390,7 +391,7 @@ export default function Home() {
 
       {/* Decorations */}
       <div
-        className="absolute inset-0 z-0 pointer-events-none"
+        className="absolute inset-0 z-0 pointer-events-none anim-decorations-enter"
         aria-hidden="true"
       >
         {decorations.map((d) => {
@@ -466,9 +467,9 @@ export default function Home() {
           className="anim-bounce-cake select-none mb-4 block"
           style={{ fontSize: "clamp(4rem, 15vw, 6rem)" }}
           role="img"
-          aria-label="Birthday cake"
+          aria-label="Celebration"
         >
-          🎂
+          {themeDef.hero}
         </span>
         <h1
           className="anim-pop-in leading-none mb-5"
@@ -482,17 +483,19 @@ export default function Home() {
           {name ? <>Happy Birthday,<br />{name}!</> : <>Happy<br />Birthday!</>}
         </h1>
         <p
-          className="text-lg font-semibold tracking-wide"
-          style={{ color: "var(--ink)", opacity: 0.75 }}
+          className="text-xl font-semibold tracking-wide anim-caption-rise"
+          style={{ color: "var(--ink-soft)" }}
         >
           {themeDef.celebrateCaption}
         </p>
       </div>
 
-      {/* Theme picker */}
-      <div className="fixed bottom-5 left-5 z-30">
-        {renderThemePicker(theme, pickTheme)}
-      </div>
+      {/* Theme picker — hidden for recipients who arrived with a ?theme= link */}
+      {!themeIsFixed && (
+        <div className="fixed bottom-5 left-5 z-30">
+          {renderThemePicker(theme, pickTheme)}
+        </div>
+      )}
 
       {/* Music toggle */}
       <button
