@@ -46,15 +46,45 @@
 
 @theme inline {
   --font-display: var(--font-lilita);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+}
+
+/* ─── Type scale ─── */
+:root {
+  --text-xs: 0.75rem;     /* chip labels */
+  --text-sm: 0.875rem;    /* helper / caption */
+  --text-base: 1rem;      /* body / inputs / secondary buttons */
+  --text-md: 1.125rem;    /* prominent buttons, marquee */
+  --text-lg: 1.5rem;      /* modal title */
+  --text-xl: 1.75rem;     /* yes button */
+  --text-display-sm: clamp(2.25rem, 8.5vw, 3.5rem);
+  --text-display-lg: clamp(3.5rem, 15vw, 7rem);
+
+  --tracking-tight: -0.015em;
+  --tracking-wide: 0.08em;
+  --tracking-stamp: 0.18em;
+}
+
+/* ─── Spacing scale ─── */
+:root {
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: clamp(2.25rem, 6vw, 3rem);
+  --space-corner: clamp(1rem, 3.5vw, 1.5rem);
 }
 
 body {
-  font-family: var(--font-geist-sans, Arial, sans-serif);
+  font-family: var(--font-body, "Trebuchet MS", "Verdana", sans-serif);
+  font-weight: 500;
   background: var(--bg);
   color: var(--ink);
   transition: background-color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* ─── Prompt background ─── */
@@ -74,9 +104,53 @@ body {
 /* ─── Marquee bar ─── */
 .marquee-bar {
   background: var(--red);
-  padding: 0.5rem 0;
+  padding: var(--space-sm) 0;
   overflow: hidden;
   transition: background-color 0.25s ease;
+}
+
+.marquee-text {
+  font-family: var(--font-lilita, sans-serif);
+  font-weight: 400;
+  font-size: var(--text-md);
+  letter-spacing: var(--tracking-wide);
+  color: var(--btn-text);
+}
+
+/* ─── Display headlines ─── */
+.headline-prompt {
+  font-family: var(--font-lilita, sans-serif);
+  font-size: var(--text-display-sm);
+  line-height: 0.95;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  margin-bottom: var(--space-xl);
+}
+
+.headline-celebrate {
+  font-family: var(--font-lilita, sans-serif);
+  font-size: var(--text-display-lg);
+  line-height: 0.88;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  text-shadow: 4px 4px 0 var(--red);
+  margin-bottom: var(--space-xl);
+}
+
+/* ─── Celebration caption (rubber-stamp tone) ─── */
+.celebrate-caption {
+  font-family: var(--font-body, sans-serif);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: var(--tracking-stamp);
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: inline-block;
+  margin-top: var(--space-md);
+  padding: var(--space-xs) var(--space-md);
+  border: 2px solid var(--ink-soft);
+  border-radius: 4px;
+  transform: rotate(-5deg);
 }
 
 /* ─── Component styles ─── */
@@ -84,8 +158,62 @@ body {
   background: var(--cream);
   border: 4px solid var(--ink);
   border-radius: 4px;
-  padding: 2.5rem 2rem;
+  padding: var(--space-2xl) var(--space-xl);
   box-shadow: 6px 6px 0 var(--ink);
+}
+
+/* Tilt wrapper — keeps card-rise translateY animation untouched */
+.card-tilt {
+  transform: rotate(-1.25deg);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.prompt-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+/* ─── Prompt screen stickers (telegraph the chaos) ─── */
+.prompt-sticker {
+  position: absolute;
+  font-size: clamp(2.5rem, 9vw, 3.75rem);
+  filter: drop-shadow(2px 2px 0 var(--ink));
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  line-height: 1;
+}
+
+.prompt-sticker--top {
+  top: clamp(3.25rem, 11vh, 5.5rem);
+  right: clamp(0.75rem, 5vw, 2rem);
+  transform: rotate(16deg);
+}
+
+.prompt-sticker--bot {
+  bottom: clamp(5.5rem, 14vh, 7rem);
+  left: clamp(0.5rem, 4vw, 1.75rem);
+  transform: rotate(-14deg);
+}
+
+/* ─── Bottom corner slots ─── */
+.corner-bl {
+  position: fixed;
+  bottom: var(--space-corner);
+  left: var(--space-corner);
+  z-index: 30;
+}
+
+.corner-br {
+  position: fixed;
+  bottom: var(--space-corner);
+  right: var(--space-corner);
+  z-index: 30;
 }
 
 .btn-yes {
@@ -94,9 +222,10 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.8rem 2.5rem;
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--text-xl);
+  font-weight: 400;
   font-family: var(--font-lilita, sans-serif);
+  letter-spacing: 0.01em;
   box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
   line-height: 1;
@@ -119,8 +248,9 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.6rem 1.25rem;
-  font-size: 1rem;
+  font-size: var(--text-base);
   font-weight: 600;
+  letter-spacing: 0.01em;
   box-shadow: 3px 3px 0 var(--ink);
   cursor: pointer;
   line-height: 1.25;
@@ -143,8 +273,9 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 700;
+  letter-spacing: 0.02em;
   box-shadow: 3px 3px 0 var(--ink);
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s;
@@ -363,7 +494,9 @@ body {
 
 .modal-title {
   font-family: var(--font-lilita, sans-serif);
-  font-size: 1.5rem;
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.05;
   color: var(--ink);
   margin-bottom: 1rem;
   padding-right: 2rem;
@@ -371,9 +504,11 @@ body {
 
 .modal-label {
   display: block;
-  font-size: 0.875rem;
+  font-size: var(--text-xs);
   font-weight: 700;
-  color: var(--ink);
+  letter-spacing: var(--tracking-stamp);
+  text-transform: uppercase;
+  color: var(--ink-soft);
   margin-bottom: 0.4rem;
 }
 
@@ -382,8 +517,9 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.5rem 0.75rem;
-  font-size: 1rem;
+  font-size: var(--text-base);
   font-family: inherit;
+  font-weight: 500;
   background: var(--cream);
   color: var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
@@ -397,8 +533,9 @@ body {
 
 .modal-preview {
   margin-top: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--ink-soft);
   animation: preview-in 0.2s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
@@ -406,7 +543,8 @@ body {
 .modal-preview em {
   font-style: normal;
   font-family: var(--font-lilita, sans-serif);
-  font-size: 1rem;
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-tight);
   color: var(--ink);
 }
 
@@ -419,9 +557,10 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: var(--text-md);
+  font-weight: 400;
   font-family: var(--font-lilita, sans-serif);
+  letter-spacing: 0.01em;
   box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
@@ -449,8 +588,8 @@ body {
   margin-top: 0.75rem;
   background: none;
   border: none;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: 500;
   color: var(--ink-soft);
   cursor: pointer;
   text-decoration: underline;
@@ -505,11 +644,11 @@ body {
 }
 
 .theme-picker-label {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   color: var(--ink);
   margin-right: 0.15rem;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-stamp);
   text-transform: uppercase;
 }
 
