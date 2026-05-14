@@ -20,6 +20,7 @@ export interface ThemeDef {
   confettiColors: string[];
   teaseTexts: string[];
   celebrateMarquees: string[];
+  celebrateBottomMarquees: string[];
   celebrateCaptions: string[];
   noEgg: string[];
   modalTitle: string;
@@ -44,6 +45,11 @@ export const THEMES: Record<Theme, ThemeDef> = {
       "🎉 HAPPY BIRTHDAY! 🎉   ",
       "🥳 PARTY MODE ENGAGED 🥳   ",
       "🎂 ANOTHER TRIP AROUND THE SUN 🎂   ",
+    ],
+    celebrateBottomMarquees: [
+      "🎂 MAKE A WISH 🎂   ",
+      "🎈 EAT MORE CAKE 🎈   ",
+      "🪩 GROOVE LICENSE GRANTED 🪩   ",
     ],
     celebrateCaptions: [
       "Certified party mode activated.",
@@ -72,6 +78,11 @@ export const THEMES: Record<Theme, ThemeDef> = {
       "👑 ROYALTY DETECTED 👑   ",
       "🌸 Sparkle level: maximum 🌸   ",
     ],
+    celebrateBottomMarquees: [
+      "👑 LONG LIVE THE BIRTHDAY 👑   ",
+      "🌸 FANCY DAY IN PROGRESS 🌸   ",
+      "💝 BRING THE GLITTER 💝   ",
+    ],
     celebrateCaptions: [
       "Certified princess party activated.",
       "Tiara required from this point on.",
@@ -99,6 +110,11 @@ export const THEMES: Record<Theme, ThemeDef> = {
       "🦋 Garden party in progress 🦋   ",
       "🌷 Bloom mode engaged 🌷   ",
     ],
+    celebrateBottomMarquees: [
+      "🌿 GROW WILD TODAY 🌿   ",
+      "🐝 BUSY CELEBRATING 🐝   ",
+      "🌷 PETAL POWER ENGAGED 🌷   ",
+    ],
     celebrateCaptions: [
       "Certified garden party activated.",
       "Pollen count: festive.",
@@ -125,6 +141,11 @@ export const THEMES: Record<Theme, ThemeDef> = {
       "✨ Make a wish! ✨   ",
       "🌙 STARDUST MODE 🌙   ",
       "🔮 The cosmos approves 🔮   ",
+    ],
+    celebrateBottomMarquees: [
+      "🌙 THE STARS APPROVE 🌙   ",
+      "🪐 COSMIC CAKE 24/7 🪐   ",
+      "💫 WISH RECEIVED 💫   ",
     ],
     celebrateCaptions: [
       "Certified stardust party activated.",

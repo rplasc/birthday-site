@@ -26,6 +26,7 @@ interface Variations {
   hero: string;
   teaseText: string;
   celebrateMarquee: string;
+  celebrateBottomMarquee: string;
   celebrateCaption: string;
   surprises: string[];
 }
@@ -74,7 +75,9 @@ function generateDecorations(palette: string[], surprises: string[]): Decoration
   let id = 0;
   const color = () => palette[Math.floor(Math.random() * palette.length)];
 
-  for (let i = 0; i < 7; i++) {
+  // Counts kept lean — edge-bias and motion variance carry the chaos,
+  // not raw quantity. More decorations past this point becomes noise.
+  for (let i = 0; i < 5; i++) {
     list.push({
       id: id++, type: "balloon",
       x: rand(4, 96), y: 0,
@@ -82,15 +85,15 @@ function generateDecorations(palette: string[], surprises: string[]): Decoration
       color: color(), rotate: rand(-20, 20), size: rand(42, 68), dx: 0,
     });
   }
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 4; i++) {
     list.push({
       id: id++, type: "star",
       x: edgeX(), y: edgeY(),
-      delay: rand(0, 1.5), duration: rand(3, 7),
+      delay: rand(0, 1.5), duration: rand(6, 12),
       color: color(), rotate: 0, size: rand(22, 44), dx: 0,
     });
   }
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 10; i++) {
     list.push({
       id: id++, type: "confetti",
       x: rand(0, 100), y: -2,
@@ -224,6 +227,7 @@ export default function Home() {
     hero: themeDef.heroes[0],
     teaseText: themeDef.teaseTexts[0],
     celebrateMarquee: themeDef.celebrateMarquees[0],
+    celebrateBottomMarquee: themeDef.celebrateBottomMarquees[0],
     celebrateCaption: themeDef.celebrateCaptions[0],
     surprises: themeDef.surpriseStickers.slice(0, 1),
   }));
@@ -237,6 +241,7 @@ export default function Home() {
       hero: pickOne(def.heroes),
       teaseText: pickOne(def.teaseTexts),
       celebrateMarquee: pickOne(def.celebrateMarquees),
+      celebrateBottomMarquee: pickOne(def.celebrateBottomMarquees),
       celebrateCaption: pickOne(def.celebrateCaptions),
       surprises: pickN(def.surpriseStickers, Math.random() < 0.5 ? 1 : 2),
     });
@@ -244,6 +249,7 @@ export default function Home() {
 
   const marqueeTease = variations.teaseText.repeat(24);
   const marqueeCelebrate = variations.celebrateMarquee.repeat(24);
+  const marqueeCelebrateBottom = variations.celebrateBottomMarquee.repeat(24);
 
   const [showShare, setShowShare] = useState(false);
   const [shareName, setShareName] = useState("");
@@ -467,10 +473,19 @@ export default function Home() {
   /* ── Celebration screen ── */
   return (
     <div className="bg-celebrate relative min-h-screen overflow-hidden flex flex-col items-center justify-center">
-      {/* Marquee bar */}
+      {/* Top marquee — red, right-scrolling, 14s. */}
       <div className="marquee-bar absolute top-0 left-0 right-0 z-20">
         <div className="anim-marquee marquee-text whitespace-nowrap">
           {marqueeCelebrate}
+        </div>
+      </div>
+
+      {/* Bottom marquee — blue (theme accent-2), left-scrolling, 18s.
+          Frames the centered hero stack between two motion bands so the
+          celebration reads as edge-to-edge, not just "centered column." */}
+      <div className="marquee-bar marquee-bar--bottom">
+        <div className="anim-marquee-reverse marquee-text whitespace-nowrap">
+          {marqueeCelebrateBottom}
         </div>
       </div>
 
