@@ -60,28 +60,37 @@ function buildShareUrl(nameVal: string, themeVal: Theme): string {
   return qs ? `${base}?${qs}` : base;
 }
 
+// Bias static decorations to the left and right thirds so they frame
+// the centered headline instead of stacking on top of it.
+function edgeX() {
+  return Math.random() < 0.5 ? rand(2, 28) : rand(72, 98);
+}
+function edgeY() {
+  return Math.random() < 0.5 ? rand(6, 32) : rand(58, 88);
+}
+
 function generateDecorations(palette: string[], surprises: string[]): Decoration[] {
   const list: Decoration[] = [];
   let id = 0;
   const color = () => palette[Math.floor(Math.random() * palette.length)];
 
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 7; i++) {
     list.push({
       id: id++, type: "balloon",
-      x: rand(5, 95), y: 0,
-      delay: rand(0, 2), duration: rand(7, 11),
+      x: rand(4, 96), y: 0,
+      delay: rand(0, 2.2), duration: rand(7, 11),
       color: color(), rotate: rand(-20, 20), size: rand(42, 68), dx: 0,
     });
   }
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     list.push({
       id: id++, type: "star",
-      x: rand(2, 98), y: rand(10, 85),
+      x: edgeX(), y: edgeY(),
       delay: rand(0, 1.5), duration: rand(3, 7),
-      color: color(), rotate: 0, size: rand(20, 42), dx: 0,
+      color: color(), rotate: 0, size: rand(22, 44), dx: 0,
     });
   }
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 14; i++) {
     list.push({
       id: id++, type: "confetti",
       x: rand(0, 100), y: -2,
@@ -93,9 +102,9 @@ function generateDecorations(palette: string[], surprises: string[]): Decoration
   for (const glyph of pickN(surprises, surpriseCount)) {
     list.push({
       id: id++, type: "surprise",
-      x: rand(10, 90), y: rand(15, 75),
+      x: edgeX(), y: edgeY(),
       delay: rand(0, 2), duration: rand(8, 14),
-      color: "", rotate: 0, size: rand(48, 72), dx: 0,
+      color: "", rotate: 0, size: rand(52, 76), dx: 0,
       glyph,
     });
   }
@@ -342,72 +351,77 @@ export default function Home() {
   /* ── Prompt screen ── */
   if (phase === "prompt") {
     return (
-      <div className="bg-party min-h-screen flex flex-col overflow-hidden">
+      <div className="bg-party min-h-screen flex flex-col overflow-hidden relative">
         {/* Marquee bar */}
         <div className="marquee-bar">
-          <div
-            className="anim-marquee whitespace-nowrap font-bold tracking-widest text-sm"
-            style={{ color: "var(--btn-text)" }}
-          >
+          <div className="anim-marquee marquee-text whitespace-nowrap">
             {marqueeTease}
           </div>
         </div>
 
-        {/* Center card */}
-        <div className="flex flex-1 items-center justify-center px-6 py-12">
-          <div className="card-panel anim-card-rise max-w-sm w-full text-center">
-            <h1
-              className="leading-tight mb-5"
-              style={{
-                fontFamily: "var(--font-lilita, sans-serif)",
-                fontSize: "clamp(2rem, 8vw, 3.25rem)",
-                color: "var(--ink)",
-              }}
-            >
-              {name ? <>{name},<br />is it your birthday?</> : <>Is it your<br />birthday?</>}
-            </h1>
-            {!themeIsFixed && (
-              <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.75rem" }}>
-                {renderThemePicker(theme, pickTheme)}
-              </div>
-            )}
-            <div className="flex items-center justify-center gap-5 flex-wrap">
-              <button onClick={handleYes} className="btn-yes">
-                Yes
-              </button>
-              {noState !== "gone" && (
-                <button
-                  onClick={handleNo}
-                  aria-live="polite"
-                  className={[
-                    "btn-no",
-                    noState === "wiggling" ? "anim-wiggle" : "",
-                    noState === "sliding" ? "anim-slide-away pointer-events-none" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  {noState === "sliding"
-                    ? "Wrong device."
-                    : noPressCount > 0
-                      ? themeDef.noEgg[noPressCount - 1]
-                      : "No"}
+        {/* Center card — intentionally surrounded by empty dotted space.
+            The party is "off" here. All sticker chaos lives on the celebration screen. */}
+        <div className="flex flex-1 items-center justify-center px-6 py-12 relative z-10">
+          <div className="card-tilt">
+            <div className="card-panel anim-card-rise max-w-sm w-full text-center">
+              <h1 className="headline-prompt">
+                {name ? <>{name},<br />is it your birthday?</> : <>Is it your<br />birthday?</>}
+              </h1>
+              <div className="prompt-actions">
+                <button type="button" onClick={handleYes} className="btn-yes">
+                  Yes
                 </button>
-              )}
+                {noState !== "gone" && (
+                  <button
+                    type="button"
+                    onClick={handleNo}
+                    aria-live="polite"
+                    className={[
+                      "btn-no",
+                      noState === "wiggling" ? "anim-wiggle" : "",
+                      noState === "sliding" ? "anim-slide-away pointer-events-none" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {noState === "sliding"
+                      ? "Wrong device."
+                      : noPressCount > 0
+                        ? themeDef.noEgg[noPressCount - 1]
+                        : "No"}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Bottom-left: theme picker (matches celebration screen layout) */}
+        {!themeIsFixed && (
+          <div className="corner-bl">
+            {renderThemePicker(theme, pickTheme, "")}
+          </div>
+        )}
+
+        {/* Bottom-right: share — quieter than Yes so the primary CTA wins. */}
         <button
+          type="button"
           onClick={openShare}
-          className="music-btn"
-          style={{ position: "fixed", bottom: "1.25rem", left: "1.25rem", zIndex: 30, background: "var(--ink)", color: "var(--cream)" }}
+          className="music-btn music-btn--share corner-br"
         >
           🔗 Share a link
         </button>
         {showShare && (
           <div className="modal-backdrop" onClick={() => { setShowShare(false); setCopied(false); }}>
             <div className="card-panel modal-card" onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close" onClick={() => { setShowShare(false); setCopied(false); }} aria-label="Close">✕</button>
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => { setShowShare(false); setCopied(false); }}
+                aria-label="Close"
+              >
+                ✕
+              </button>
               <h2 className="modal-title">{THEMES[shareTheme].modalTitle}</h2>
               <div className="modal-vibe">
                 <label className="modal-label">Pick their vibe</label>
@@ -429,14 +443,19 @@ export default function Home() {
                 </p>
               )}
               <button
+                type="button"
                 className="btn-copy-link"
                 onClick={handleCopy}
                 style={copied ? { background: "var(--green)" } : undefined}
               >
                 {copied ? "✓ Copied! Now send it 🎉" : "🔗 Copy link"}
               </button>
-              <button className="btn-maybe-later" onClick={() => { setShowShare(false); setCopied(false); }}>
-                maybe later
+              <button
+                type="button"
+                className="btn-maybe-later"
+                onClick={() => { setShowShare(false); setCopied(false); }}
+              >
+                Maybe later
               </button>
             </div>
           </div>
@@ -450,10 +469,7 @@ export default function Home() {
     <div className="bg-celebrate relative min-h-screen overflow-hidden flex flex-col items-center justify-center">
       {/* Marquee bar */}
       <div className="marquee-bar absolute top-0 left-0 right-0 z-20">
-        <div
-          className="anim-marquee whitespace-nowrap font-bold text-base tracking-widest"
-          style={{ color: "var(--btn-text)" }}
-        >
+        <div className="anim-marquee marquee-text whitespace-nowrap">
           {marqueeCelebrate}
         </div>
       </div>
@@ -549,45 +565,44 @@ export default function Home() {
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center text-center px-6 pt-20 pb-10">
+        {/* 8-point starburst — 90s greeting-card POW badge framing the headline.
+            Tinted with the theme's dominant accent, rotates slowly. */}
+        <svg
+          className="hero-starburst"
+          viewBox="0 0 200 200"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <polygon points="100,5 114.5,64.9 167.2,32.8 135.1,85.4 195,100 135.1,114.6 167.2,167.2 114.5,135.1 100,195 85.5,135.1 32.8,167.2 64.9,114.6 5,100 64.9,85.4 32.8,32.8 85.5,64.9" />
+        </svg>
         <span
-          className="anim-bounce-cake select-none mb-4 block"
-          style={{ fontSize: "clamp(4rem, 15vw, 6rem)" }}
+          className="hero-glyph anim-bounce-cake select-none mb-1 block"
           role="img"
           aria-label={`${themeDef.name} celebration`}
         >
           {variations.hero}
         </span>
-        <h1
-          className="anim-pop-in leading-none mb-5"
-          style={{
-            fontFamily: "var(--font-lilita, sans-serif)",
-            fontSize: "clamp(3.5rem, 15vw, 7rem)",
-            color: "var(--ink)",
-            textShadow: "4px 4px 0 var(--red)",
-          }}
-        >
+        <h1 className="anim-pop-in headline-celebrate">
           {name ? <>Happy Birthday,<br />{name}!</> : <>Happy<br />Birthday!</>}
         </h1>
-        <p
-          className="text-2xl font-semibold tracking-wide anim-caption-rise"
-          style={{ color: "var(--ink)" }}
-        >
+        <p className="anim-caption-rise celebrate-caption">
           {variations.celebrateCaption}
         </p>
       </div>
 
       {/* Theme picker — hidden for recipients who arrived with a ?theme= link */}
       {!themeIsFixed && (
-        <div className="fixed bottom-5 left-5 z-30">
-          {renderThemePicker(theme, pickTheme)}
+        <div className="corner-bl">
+          {renderThemePicker(theme, pickTheme, "")}
         </div>
       )}
 
       {/* Music toggle */}
       <button
+        type="button"
         onClick={toggleMusic}
         aria-label={isPlaying ? "Pause music" : "Play music"}
-        className="music-btn fixed bottom-5 right-5 z-30"
+        className="music-btn corner-br"
       >
         {isPlaying ? "♫ Pause" : "♪ Play"}
       </button>

@@ -61,7 +61,7 @@ export const THEMES: Record<Theme, ThemeDef> = {
     stars: ["💖", "💗", "✨"],
     heroes: ["👑", "🦄", "🧁"],
     surpriseStickers: ["🦄", "💝", "🧁", "🌸", "💍"],
-    confettiColors: ["#f9a8d4", "#fbcfe8", "#fda4af", "#fcd5ce", "#f472b6"],
+    confettiColors: ["#db2777", "#f472b6", "#7c3aed", "#facc15", "#38bdf8", "#fcd5ce"],
     teaseTexts: [
       "💖  It's your special day...  💖     ",
       "👑  A royal occasion approaches...  👑     ",
@@ -88,7 +88,7 @@ export const THEMES: Record<Theme, ThemeDef> = {
     stars: ["🍃", "🌿", "🌱"],
     heroes: ["🌻", "🌺", "🌼"],
     surpriseStickers: ["🦋", "🐝", "🌷", "🍄", "🐞"],
-    confettiColors: ["#a7f3d0", "#bef264", "#99f6e4", "#fef9c3", "#fbcfe8"],
+    confettiColors: ["#059669", "#0284c7", "#facc15", "#ec4899", "#84cc16", "#fb923c"],
     teaseTexts: [
       "🌿  A sweet day to celebrate...  🌿     ",
       "🌸  Something's blooming today...  🌸     ",
@@ -115,7 +115,7 @@ export const THEMES: Record<Theme, ThemeDef> = {
     stars: ["✨", "💫", "⭐"],
     heroes: ["🔮", "🌙", "🦄"],
     surpriseStickers: ["🌙", "💫", "🌟", "🦄", "🔭"],
-    confettiColors: ["#ddd6fe", "#c4b5fd", "#fbcfe8", "#bae6fd", "#f5d0fe"],
+    confettiColors: ["#7c3aed", "#ec4899", "#06b6d4", "#facc15", "#a3e635", "#f472b6"],
     teaseTexts: [
       "✨  Make a wish tonight...  ✨     ",
       "🌙  The stars are aligning...  🌙     ",

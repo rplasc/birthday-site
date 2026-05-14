@@ -14,47 +14,85 @@
   --btn-text: var(--cream);
 }
 
+/* Pink "Princess" — pastel cotton-candy bg, contrasting violet + gold accents.
+   Hot-pink dominant (60%) keeps the Princess identity; violet (30%) and
+   gold (10%) clash deliberately, party-store style, instead of harmonising. */
 [data-theme="pink"] {
   --bg: #ffe4ef;
-  --bg-dot: #fbcfe8;
-  --red: #ec4899;
-  --blue: #f9a8d4;
-  --green: #fb7185;
+  --bg-dot: #f9a8d4;
+  --red: #db2777;
+  --blue: #7c3aed;
+  --green: #facc15;
   --backdrop: rgba(251, 207, 232, 0.55);
-  --btn-text: var(--ink);
+  --btn-text: var(--cream);
 }
 
+/* Mint — pastel mint bg, with three actually-distinct hues: emerald Yes,
+   sky-blue No, sunny-yellow music. The old palette was three greens; this
+   reads as a real party tablecloth instead of a Glossier ad. */
 [data-theme="mint"] {
   --bg: #d1fae5;
   --bg-dot: #6ee7b7;
-  --red: #10b981;
-  --blue: #22d3ee;
-  --green: #84cc16;
+  --red: #059669;
+  --blue: #0284c7;
+  --green: #facc15;
   --backdrop: rgba(167, 243, 208, 0.55);
-  --btn-text: var(--ink);
+  --btn-text: var(--cream);
 }
 
+/* Lavender — pastel violet bg, hot-pink No and cyan music chip to push
+   the cool palette into actual contrast instead of monochrome lilac. */
 [data-theme="lavender"] {
   --bg: #ede9fe;
   --bg-dot: #c4b5fd;
-  --red: #a78bfa;
-  --blue: #818cf8;
-  --green: #f0abfc;
+  --red: #7c3aed;
+  --blue: #ec4899;
+  --green: #06b6d4;
   --backdrop: rgba(221, 214, 254, 0.55);
-  --btn-text: var(--ink);
+  --btn-text: var(--cream);
 }
 
 @theme inline {
   --font-display: var(--font-lilita);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+}
+
+/* ─── Type scale ─── */
+:root {
+  --text-xs: 0.75rem;     /* chip labels */
+  --text-sm: 0.875rem;    /* helper / caption */
+  --text-base: 1rem;      /* body / inputs / secondary buttons */
+  --text-md: 1.125rem;    /* prominent buttons, marquee */
+  --text-lg: 1.5rem;      /* modal title */
+  --text-xl: 1.75rem;     /* yes button */
+  --text-display-sm: clamp(2.25rem, 8.5vw, 3.5rem);
+  --text-display-lg: clamp(4rem, 18vw, 8.5rem);
+
+  --tracking-tight: -0.015em;
+  --tracking-wide: 0.08em;
+  --tracking-stamp: 0.18em;
+}
+
+/* ─── Spacing scale ─── */
+:root {
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: clamp(2.25rem, 6vw, 3rem);
+  --space-corner: clamp(1rem, 3.5vw, 1.5rem);
 }
 
 body {
-  font-family: var(--font-geist-sans, Arial, sans-serif);
+  font-family: var(--font-body, "Trebuchet MS", "Verdana", sans-serif);
+  font-weight: 500;
   background: var(--bg);
   color: var(--ink);
   transition: background-color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 /* ─── Prompt background ─── */
@@ -74,9 +112,92 @@ body {
 /* ─── Marquee bar ─── */
 .marquee-bar {
   background: var(--red);
-  padding: 0.5rem 0;
+  padding: var(--space-sm) 0;
   overflow: hidden;
   transition: background-color 0.25s ease;
+}
+
+.marquee-text {
+  font-family: var(--font-lilita, sans-serif);
+  font-weight: 400;
+  font-size: var(--text-md);
+  letter-spacing: var(--tracking-wide);
+  color: var(--btn-text);
+}
+
+/* ─── Display headlines ─── */
+.headline-prompt {
+  font-family: var(--font-lilita, sans-serif);
+  font-size: var(--text-display-sm);
+  line-height: 0.95;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  margin-bottom: var(--space-xl);
+}
+
+/* WordArt-era chrome: cream fill, thick ink outline, hard-offset shadow in
+   a second theme accent. Three theme colors layered on the page's hero. */
+.headline-celebrate {
+  font-family: var(--font-lilita, sans-serif);
+  font-size: var(--text-display-lg);
+  line-height: 0.88;
+  letter-spacing: var(--tracking-tight);
+  color: var(--cream);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 5px 5px 0 var(--blue);
+  margin-bottom: var(--space-2xl);
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero emoji and stamp caption sit above the rotating starburst. */
+.hero-glyph {
+  font-size: clamp(5.5rem, 22vw, 9rem);
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(3px 3px 0 var(--ink));
+}
+
+/* Starburst badge — sits behind the headline stack. */
+.hero-starburst {
+  position: absolute;
+  width: clamp(20rem, 78vw, 34rem);
+  height: clamp(20rem, 78vw, 34rem);
+  top: 50%;
+  left: 50%;
+  /* Base translate so the starburst stays centered even when the spin
+     animation is disabled by prefers-reduced-motion. */
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  fill: var(--red);
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-linejoin: round;
+  filter: drop-shadow(5px 5px 0 var(--ink));
+  pointer-events: none;
+  animation: starburst-spin 34s linear infinite;
+  opacity: 0.95;
+}
+
+/* ─── Celebration caption (rubber-stamp tone) ─── */
+.celebrate-caption {
+  font-family: var(--font-body, sans-serif);
+  font-size: var(--text-sm);
+  font-weight: 800;
+  letter-spacing: var(--tracking-stamp);
+  text-transform: uppercase;
+  color: var(--red);
+  display: inline-block;
+  margin-top: var(--space-md);
+  padding: var(--space-xs) var(--space-md);
+  border: 2.5px solid var(--red);
+  box-shadow: inset 0 0 0 1.5px var(--bg), 0 0 0 1px var(--red);
+  border-radius: 4px;
+  transform: rotate(-5deg);
+  mix-blend-mode: multiply;
+  position: relative;
+  z-index: 1;
 }
 
 /* ─── Component styles ─── */
@@ -84,8 +205,39 @@ body {
   background: var(--cream);
   border: 4px solid var(--ink);
   border-radius: 4px;
-  padding: 2.5rem 2rem;
+  padding: var(--space-2xl) var(--space-xl);
   box-shadow: 6px 6px 0 var(--ink);
+}
+
+/* Tilt wrapper — keeps card-rise translateY animation untouched */
+.card-tilt {
+  transform: rotate(-1.25deg);
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.prompt-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+/* ─── Bottom corner slots ─── */
+.corner-bl {
+  position: fixed;
+  bottom: var(--space-corner);
+  left: var(--space-corner);
+  z-index: 30;
+}
+
+.corner-br {
+  position: fixed;
+  bottom: var(--space-corner);
+  right: var(--space-corner);
+  z-index: 30;
 }
 
 .btn-yes {
@@ -94,9 +246,10 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.8rem 2.5rem;
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: var(--text-xl);
+  font-weight: 400;
   font-family: var(--font-lilita, sans-serif);
+  letter-spacing: 0.01em;
   box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
   line-height: 1;
@@ -119,8 +272,9 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.6rem 1.25rem;
-  font-size: 1rem;
+  font-size: var(--text-base);
   font-weight: 600;
+  letter-spacing: 0.01em;
   box-shadow: 3px 3px 0 var(--ink);
   cursor: pointer;
   line-height: 1.25;
@@ -143,8 +297,9 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
   font-weight: 700;
+  letter-spacing: 0.02em;
   box-shadow: 3px 3px 0 var(--ink);
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s;
@@ -158,6 +313,12 @@ body {
 .music-btn:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* Share variant — quiet, ink-on-cream so it doesn't compete with Yes. */
+.music-btn--share {
+  background: var(--ink);
+  color: var(--cream);
 }
 
 /* ─── Touch & focus ─── */
@@ -224,6 +385,11 @@ body {
 @keyframes burst-ring {
   0%   { transform: scale(0); opacity: 0.9; }
   100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes starburst-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 @keyframes wiggle {
@@ -320,7 +486,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: var(--space-lg);
   animation: backdrop-fade 0.2s ease-out both;
 }
 
@@ -333,14 +499,14 @@ body {
 
 .modal-close {
   position: absolute;
-  top: 0.6rem;
-  right: 0.6rem;
+  top: var(--space-sm);
+  right: var(--space-sm);
   background: none;
   border: 2px solid var(--ink);
   border-radius: 4px;
-  width: 2rem;
-  height: 2rem;
-  font-size: 0.875rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: var(--text-base);
   font-weight: 700;
   color: var(--ink);
   cursor: pointer;
@@ -363,17 +529,21 @@ body {
 
 .modal-title {
   font-family: var(--font-lilita, sans-serif);
-  font-size: 1.5rem;
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.05;
   color: var(--ink);
-  margin-bottom: 1rem;
-  padding-right: 2rem;
+  margin-bottom: var(--space-md);
+  padding-right: 3rem;
 }
 
 .modal-label {
   display: block;
-  font-size: 0.875rem;
+  font-size: var(--text-xs);
   font-weight: 700;
-  color: var(--ink);
+  letter-spacing: var(--tracking-stamp);
+  text-transform: uppercase;
+  color: var(--ink-soft);
   margin-bottom: 0.4rem;
 }
 
@@ -382,8 +552,9 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.5rem 0.75rem;
-  font-size: 1rem;
+  font-size: var(--text-base);
   font-family: inherit;
+  font-weight: 500;
   background: var(--cream);
   color: var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
@@ -397,8 +568,9 @@ body {
 
 .modal-preview {
   margin-top: 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--ink-soft);
   animation: preview-in 0.2s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
@@ -406,7 +578,8 @@ body {
 .modal-preview em {
   font-style: normal;
   font-family: var(--font-lilita, sans-serif);
-  font-size: 1rem;
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-tight);
   color: var(--ink);
 }
 
@@ -419,9 +592,10 @@ body {
   border: 3px solid var(--ink);
   border-radius: 4px;
   padding: 0.75rem 1.5rem;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-size: var(--text-md);
+  font-weight: 400;
   font-family: var(--font-lilita, sans-serif);
+  letter-spacing: 0.01em;
   box-shadow: 4px 4px 0 var(--ink);
   cursor: pointer;
   transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
@@ -449,8 +623,8 @@ body {
   margin-top: 0.75rem;
   background: none;
   border: none;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: 500;
   color: var(--ink-soft);
   cursor: pointer;
   text-decoration: underline;
@@ -472,17 +646,18 @@ body {
 .theme-picker {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.55rem;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
   background: var(--cream);
   border: 3px solid var(--ink);
   border-radius: 999px;
   box-shadow: 3px 3px 0 var(--ink);
 }
 
+/* 2.75rem ≈ 44px — meets WCAG 2.5.8 target-size minimum on touch. */
 .theme-swatch {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 999px;
   border: 2px solid var(--ink);
   cursor: pointer;
@@ -505,11 +680,11 @@ body {
 }
 
 .theme-picker-label {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   color: var(--ink);
   margin-right: 0.15rem;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-stamp);
   text-transform: uppercase;
 }
 
@@ -540,6 +715,7 @@ body {
   .anim-card-rise,
   .anim-decorations-enter,
   .anim-caption-rise,
+  .hero-starburst,
   .burst-ring,
   .modal-backdrop,
   .modal-card,
