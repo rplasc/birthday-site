@@ -1,6 +1,15 @@
 export const THEME_KEYS = ["default", "pink", "mint", "lavender"] as const;
 export type Theme = (typeof THEME_KEYS)[number];
 
+export interface MusicConfig {
+  waveType: OscillatorType;
+  transpose: number;
+  tempoMul: number;
+  masterGain: number;
+  harmonyInterval?: number;
+  harmonyGain?: number;
+}
+
 export interface ThemeDef {
   name: string;
   swatch: string;
@@ -10,6 +19,7 @@ export interface ThemeDef {
   teaseText: string;
   celebrateCaption: string;
   modalTitle: string;
+  music: MusicConfig;
 }
 
 export const THEMES: Record<Theme, ThemeDef> = {
@@ -22,6 +32,7 @@ export const THEMES: Record<Theme, ThemeDef> = {
     teaseText: "✨  It's that time of year...  ✨     ",
     celebrateCaption: "Certified party mode activated.",
     modalTitle: "Send the party! 🎉",
+    music: { waveType: "triangle", transpose: 0, tempoMul: 1.0, masterGain: 0.22 },
   },
   pink: {
     name: "Princess",
@@ -32,6 +43,7 @@ export const THEMES: Record<Theme, ThemeDef> = {
     teaseText: "💖  It's your special day...  💖     ",
     celebrateCaption: "Certified princess party activated.",
     modalTitle: "Send the sparkle! 💖",
+    music: { waveType: "sine", transpose: 5, tempoMul: 1.1, masterGain: 0.22, harmonyInterval: 12, harmonyGain: 0.25 },
   },
   mint: {
     name: "Garden",
@@ -42,6 +54,7 @@ export const THEMES: Record<Theme, ThemeDef> = {
     teaseText: "🌿  A sweet day to celebrate...  🌿     ",
     celebrateCaption: "Certified garden party activated.",
     modalTitle: "Send the bloom! 🌸",
+    music: { waveType: "triangle", transpose: 7, tempoMul: 0.88, masterGain: 0.22, harmonyInterval: 7, harmonyGain: 0.3 },
   },
   lavender: {
     name: "Stardust",
@@ -52,6 +65,7 @@ export const THEMES: Record<Theme, ThemeDef> = {
     teaseText: "✨  Make a wish tonight...  ✨     ",
     celebrateCaption: "Certified stardust party activated.",
     modalTitle: "Send the magic! ✨",
+    music: { waveType: "sine", transpose: 3, tempoMul: 1.2, masterGain: 0.22, harmonyInterval: -12, harmonyGain: 0.18 },
   },
 };
 

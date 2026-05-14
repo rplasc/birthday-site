@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
-import { THEMES, THEME_KEYS, isTheme, type Theme } from "./themes";
+import { THEMES, THEME_KEYS, isTheme, type Theme, type MusicConfig } from "./themes";
 
 type Phase = "prompt" | "celebrating";
 type NoState = "default" | "wiggling" | "sliding" | "gone";
@@ -66,7 +66,7 @@ function generateDecorations(palette: string[]): Decoration[] {
   return list;
 }
 
-// "Happy Birthday to You" — C major
+// "Happy Birthday to You" — C major base frequencies
 const NOTES: [number, number][] = [
   [392, 0.375], [392, 0.125], [440, 0.5], [392, 0.5], [523.25, 0.5], [493.88, 1],
   [392, 0.375], [392, 0.125], [440, 0.5], [392, 0.5], [587.33, 0.5], [523.25, 1],
@@ -74,29 +74,48 @@ const NOTES: [number, number][] = [
   [698.46, 0.375], [698.46, 0.125], [659.25, 0.5], [523.25, 0.5], [587.33, 0.5], [523.25, 1.5],
 ];
 
-const SONG_DURATION = NOTES.reduce((s, [, d]) => s + d, 0);
-
-function playSong(ctx: AudioContext): () => void {
+function playSong(ctx: AudioContext, config: MusicConfig): () => void {
   const master = ctx.createGain();
-  master.gain.value = 0.22;
+  master.gain.value = config.masterGain;
   master.connect(ctx.destination);
   const oscs: OscillatorNode[] = [];
+  const freqMul = 2 ** (config.transpose / 12);
+  const harmonyMul = config.harmonyInterval != null ? 2 ** (config.harmonyInterval / 12) : null;
   let t = ctx.currentTime + 0.05;
 
   for (const [freq, dur] of NOTES) {
+    const scaledDur = dur * config.tempoMul;
+    const mFreq = freq * freqMul;
+
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.value = freq;
+    osc.type = config.waveType;
+    osc.frequency.value = mFreq;
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(0.4, t + 0.02);
-    g.gain.linearRampToValueAtTime(0, t + dur * 0.88);
+    g.gain.linearRampToValueAtTime(0, t + scaledDur * 0.88);
     osc.connect(g);
     g.connect(master);
     osc.start(t);
-    osc.stop(t + dur);
+    osc.stop(t + scaledDur);
     oscs.push(osc);
-    t += dur;
+
+    if (harmonyMul != null && config.harmonyGain != null) {
+      const hosc = ctx.createOscillator();
+      const hg = ctx.createGain();
+      hosc.type = config.waveType;
+      hosc.frequency.value = mFreq * harmonyMul;
+      hg.gain.setValueAtTime(0, t);
+      hg.gain.linearRampToValueAtTime(config.harmonyGain, t + 0.02);
+      hg.gain.linearRampToValueAtTime(0, t + scaledDur * 0.88);
+      hosc.connect(hg);
+      hg.connect(master);
+      hosc.start(t);
+      hosc.stop(t + scaledDur);
+      oscs.push(hosc);
+    }
+
+    t += scaledDur;
   }
 
   return () => {
@@ -105,15 +124,16 @@ function playSong(ctx: AudioContext): () => void {
   };
 }
 
-function startLoop(ctx: AudioContext): () => void {
+function startLoop(ctx: AudioContext, config: MusicConfig): () => void {
+  const loopDuration = NOTES.reduce((s, [, d]) => s + d * config.tempoMul, 0) * 1000;
   let stopped = false;
   let stopCurrent: (() => void) | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   const loop = () => {
     if (stopped) return;
-    stopCurrent = playSong(ctx);
-    timer = setTimeout(loop, SONG_DURATION * 1000);
+    stopCurrent = playSong(ctx, config);
+    timer = setTimeout(loop, loopDuration);
   };
   loop();
 
@@ -176,12 +196,20 @@ export default function Home() {
   const ctxRef = useRef<AudioContext | null>(null);
   const stopLoopRef = useRef<(() => void) | null>(null);
 
-  const startSong = useCallback(() => {
+  // Restart music when theme changes mid-play
+  useEffect(() => {
+    if (!isPlaying || !ctxRef.current) return;
+    stopLoopRef.current?.();
+    stopLoopRef.current = startLoop(ctxRef.current, THEMES[theme].music);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [theme]);
+
+  const startSong = useCallback((config: MusicConfig) => {
     if (!ctxRef.current) ctxRef.current = new AudioContext();
     const ctx = ctxRef.current;
     if (ctx.state === "suspended") ctx.resume();
     stopLoopRef.current?.();
-    stopLoopRef.current = startLoop(ctx);
+    stopLoopRef.current = startLoop(ctx, config);
     setIsPlaying(true);
   }, []);
 
@@ -195,9 +223,9 @@ export default function Home() {
     setDecorations(generateDecorations(themeDef.confettiColors));
     setPhase("celebrating");
     setShowBurst(true);
-    startSong();
+    startSong(themeDef.music);
     setTimeout(() => setShowBurst(false), 900);
-  }, [startSong, themeDef.confettiColors]);
+  }, [startSong, themeDef.confettiColors, themeDef.music]);
 
   const handleNo = useCallback(() => {
     if (noState !== "default") return;
@@ -208,8 +236,8 @@ export default function Home() {
 
   const toggleMusic = useCallback(() => {
     if (isPlaying) stopSong();
-    else startSong();
-  }, [isPlaying, startSong, stopSong]);
+    else startSong(themeDef.music);
+  }, [isPlaying, startSong, stopSong, themeDef.music]);
 
   const handleCopy = useCallback(async () => {
     try {
