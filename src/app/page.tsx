@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
+import { THEMES, THEME_KEYS, isTheme, type Theme } from "./themes";
 
 type Phase = "prompt" | "celebrating";
 type NoState = "default" | "wiggling" | "sliding" | "gone";
@@ -18,23 +19,25 @@ interface Decoration {
   dx: number;
 }
 
-const COLORS = ["#dc2626", "#2563eb", "#16a34a", "#f59e0b", "#ec4899", "#8b5cf6"];
-
 function rand(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
 
-function buildShareUrl(nameVal: string): string {
+function buildShareUrl(nameVal: string, themeVal: Theme): string {
   if (typeof window === "undefined") return "";
   const base = `${window.location.origin}${window.location.pathname}`;
+  const params = new URLSearchParams();
   const trimmed = nameVal.trim();
-  return trimmed ? `${base}?name=${encodeURIComponent(trimmed)}` : base;
+  if (trimmed) params.set("name", trimmed);
+  if (themeVal !== "default") params.set("theme", themeVal);
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
 }
 
-function generateDecorations(): Decoration[] {
+function generateDecorations(palette: string[]): Decoration[] {
   const list: Decoration[] = [];
   let id = 0;
-  const color = () => COLORS[Math.floor(Math.random() * COLORS.length)];
+  const color = () => palette[Math.floor(Math.random() * palette.length)];
 
   for (let i = 0; i < 6; i++) {
     list.push({
@@ -122,7 +125,6 @@ function startLoop(ctx: AudioContext): () => void {
 }
 
 const MARQUEE_PARTY = "🎉 HAPPY BIRTHDAY! 🎉   ".repeat(24);
-const MARQUEE_TEASE = "✨  It's that time of year...  ✨     ".repeat(24);
 
 export default function Home() {
   const [phase, setPhase] = useState<Phase>("prompt");
@@ -131,15 +133,45 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showBurst, setShowBurst] = useState(false);
   const [name, setName] = useState<string | null>(null);
+  const [theme, setTheme] = useState<Theme>("default");
   useLayoutEffect(() => {
-    const n = new URLSearchParams(window.location.search).get("name")?.trim();
+    const params = new URLSearchParams(window.location.search);
+    const n = params.get("name")?.trim();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (n) setName(n);
+    const t = params.get("theme");
+    if (isTheme(t)) setTheme(t);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    return () => { delete document.documentElement.dataset.theme; };
+  }, [theme]);
+
+  const themeDef = THEMES[theme];
+  const marqueeTease = themeDef.teaseText.repeat(24);
 
   const [showShare, setShowShare] = useState(false);
   const [shareName, setShareName] = useState("");
+  const [shareTheme, setShareTheme] = useState<Theme>(theme);
   const [copied, setCopied] = useState(false);
+
+  const openShare = useCallback(() => {
+    setShareTheme(theme);
+    setShowShare(true);
+  }, [theme]);
+
+  const pickTheme = useCallback((next: Theme) => {
+    setTheme(next);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (next === "default") params.delete("theme");
+      else params.set("theme", next);
+      const qs = params.toString();
+      const url = `${window.location.pathname}${qs ? `?${qs}` : ""}`;
+      window.history.replaceState(null, "", url);
+    }
+  }, []);
 
   const ctxRef = useRef<AudioContext | null>(null);
   const stopLoopRef = useRef<(() => void) | null>(null);
@@ -160,12 +192,12 @@ export default function Home() {
   }, []);
 
   const handleYes = useCallback(() => {
-    setDecorations(generateDecorations());
+    setDecorations(generateDecorations(themeDef.confettiColors));
     setPhase("celebrating");
     setShowBurst(true);
     startSong();
     setTimeout(() => setShowBurst(false), 900);
-  }, [startSong]);
+  }, [startSong, themeDef.confettiColors]);
 
   const handleNo = useCallback(() => {
     if (noState !== "default") return;
@@ -181,15 +213,34 @@ export default function Home() {
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(buildShareUrl(shareName));
+      await navigator.clipboard.writeText(buildShareUrl(shareName, shareTheme));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // clipboard not available
     }
-  }, [shareName]);
+  }, [shareName, shareTheme]);
 
   useEffect(() => () => { stopSong(); }, [stopSong]);
+
+  const renderThemePicker = (selected: Theme, onPick: (t: Theme) => void) => (
+    <div className="theme-picker" role="radiogroup" aria-label="Theme">
+      <span className="theme-picker-label">Vibe</span>
+      {THEME_KEYS.map((k) => (
+        <button
+          key={k}
+          type="button"
+          role="radio"
+          aria-checked={selected === k}
+          aria-label={THEMES[k].name}
+          title={THEMES[k].name}
+          onClick={() => onPick(k)}
+          className={`theme-swatch${selected === k ? " theme-swatch--active" : ""}`}
+          style={{ background: THEMES[k].swatch }}
+        />
+      ))}
+    </div>
+  );
 
   /* ── Prompt screen ── */
   if (phase === "prompt") {
@@ -204,7 +255,7 @@ export default function Home() {
             className="anim-marquee whitespace-nowrap font-bold tracking-widest text-sm"
             style={{ color: "var(--cream)" }}
           >
-            {MARQUEE_TEASE}
+            {marqueeTease}
           </div>
         </div>
 
@@ -243,14 +294,17 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <button onClick={() => setShowShare(true)} className="music-btn" style={{ position: "fixed", bottom: "1.25rem", left: "1.25rem", background: "var(--ink)" }}>
-          🔗 Share a link
-        </button>
+        <div style={{ position: "fixed", bottom: "1.25rem", left: "1.25rem", display: "flex", flexDirection: "column", gap: "0.6rem", alignItems: "flex-start", zIndex: 30 }}>
+          {renderThemePicker(theme, pickTheme)}
+          <button onClick={openShare} className="music-btn" style={{ background: "var(--ink)" }}>
+            🔗 Share a link
+          </button>
+        </div>
         {showShare && (
           <div className="modal-backdrop" onClick={() => { setShowShare(false); setCopied(false); }}>
             <div className="card-panel modal-card" onClick={(e) => e.stopPropagation()}>
               <button className="modal-close" onClick={() => { setShowShare(false); setCopied(false); }} aria-label="Close">✕</button>
-              <h2 className="modal-title">Send the party! 🎉</h2>
+              <h2 className="modal-title">{themeDef.modalTitle}</h2>
               <label className="modal-label" htmlFor="share-name">Who&apos;s celebrating?</label>
               <input
                 id="share-name"
@@ -266,6 +320,10 @@ export default function Home() {
                   They&apos;ll see: <em>Happy Birthday, {shareName.trim()}! 🎂</em>
                 </p>
               )}
+              <div className="modal-vibe">
+                <label className="modal-label">Pick a vibe</label>
+                {renderThemePicker(shareTheme, setShareTheme)}
+              </div>
               <button
                 className="btn-copy-link"
                 onClick={handleCopy}
@@ -322,7 +380,7 @@ export default function Home() {
                   "--rot": `${d.rotate}deg`,
                 } as React.CSSProperties}
               >
-                🎈
+                {themeDef.balloon}
               </span>
             );
           }
@@ -339,7 +397,7 @@ export default function Home() {
                   animationDelay: `${d.delay}s`,
                 } as React.CSSProperties}
               >
-                ⭐
+                {themeDef.star}
               </span>
             );
           }
@@ -399,8 +457,13 @@ export default function Home() {
           className="text-lg font-semibold tracking-wide"
           style={{ color: "var(--ink)", opacity: 0.75 }}
         >
-          Certified party mode activated.
+          {themeDef.celebrateCaption}
         </p>
+      </div>
+
+      {/* Theme picker */}
+      <div className="fixed bottom-5 left-5 z-30">
+        {renderThemePicker(theme, pickTheme)}
       </div>
 
       {/* Music toggle */}

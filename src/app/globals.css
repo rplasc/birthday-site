@@ -3,12 +3,41 @@
 /* ─── Theme tokens ─── */
 :root {
   --bg: #dbeafe;
+  --bg-dot: #93c5fd;
   --red: #dc2626;
   --blue: #2563eb;
   --green: #16a34a;
   --cream: #fefce8;
   --ink: #1c1917;
   --ink-soft: #55524b;
+  --backdrop: rgba(254, 240, 80, 0.45);
+}
+
+[data-theme="pink"] {
+  --bg: #ffe4ef;
+  --bg-dot: #fbcfe8;
+  --red: #ec4899;
+  --blue: #f9a8d4;
+  --green: #fb7185;
+  --backdrop: rgba(251, 207, 232, 0.55);
+}
+
+[data-theme="mint"] {
+  --bg: #d1fae5;
+  --bg-dot: #6ee7b7;
+  --red: #10b981;
+  --blue: #22d3ee;
+  --green: #84cc16;
+  --backdrop: rgba(167, 243, 208, 0.55);
+}
+
+[data-theme="lavender"] {
+  --bg: #ede9fe;
+  --bg-dot: #c4b5fd;
+  --red: #a78bfa;
+  --blue: #818cf8;
+  --green: #f0abfc;
+  --backdrop: rgba(221, 214, 254, 0.55);
 }
 
 @theme inline {
@@ -26,7 +55,7 @@ body {
 /* ─── Prompt background ─── */
 .bg-party {
   background-color: var(--bg);
-  background-image: radial-gradient(circle, #93c5fd 1.5px, transparent 1.5px);
+  background-image: radial-gradient(circle, var(--bg-dot) 1.5px, transparent 1.5px);
   background-size: 28px 28px;
 }
 
@@ -258,7 +287,7 @@ body {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(254, 240, 80, 0.45);
+  background: var(--backdrop);
   z-index: 50;
   display: flex;
   align-items: center;
@@ -437,6 +466,59 @@ body {
 .btn-share:focus-visible {
   outline: 3px dashed var(--ink);
   outline-offset: 3px;
+}
+
+/* ─── Theme picker ─── */
+.theme-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.55rem;
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.theme-swatch {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s, box-shadow 0.1s;
+  touch-action: manipulation;
+}
+
+.theme-swatch:hover {
+  transform: translateY(-1px);
+}
+
+.theme-swatch--active {
+  box-shadow: 0 0 0 2px var(--cream), 0 0 0 4px var(--ink);
+}
+
+.theme-swatch:focus-visible {
+  outline: 3px dashed var(--ink);
+  outline-offset: 3px;
+}
+
+.theme-picker-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-right: 0.15rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.modal-vibe {
+  margin-top: 1rem;
+}
+
+.modal-vibe .theme-picker {
+  width: fit-content;
 }
 
 /* ─── Reduced motion ─── */
