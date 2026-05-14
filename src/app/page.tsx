@@ -8,7 +8,7 @@ type NoState = "default" | "wiggling" | "sliding" | "gone";
 
 interface Decoration {
   id: number;
-  type: "balloon" | "star" | "confetti";
+  type: "balloon" | "star" | "confetti" | "surprise";
   x: number;
   y: number;
   delay: number;
@@ -17,10 +17,36 @@ interface Decoration {
   rotate: number;
   size: number;
   dx: number;
+  glyph?: string;
+}
+
+interface Variations {
+  balloon: string;
+  star: string;
+  hero: string;
+  teaseText: string;
+  celebrateMarquee: string;
+  celebrateCaption: string;
+  surprises: string[];
 }
 
 function rand(min: number, max: number) {
   return min + Math.random() * (max - min);
+}
+
+function pickOne<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function pickN<T>(arr: readonly T[], n: number): T[] {
+  if (arr.length <= n) return [...arr];
+  const pool = [...arr];
+  const out: T[] = [];
+  for (let i = 0; i < n; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    out.push(pool.splice(idx, 1)[0]);
+  }
+  return out;
 }
 
 function buildShareUrl(nameVal: string, themeVal: Theme): string {
@@ -34,7 +60,7 @@ function buildShareUrl(nameVal: string, themeVal: Theme): string {
   return qs ? `${base}?${qs}` : base;
 }
 
-function generateDecorations(palette: string[]): Decoration[] {
+function generateDecorations(palette: string[], surprises: string[]): Decoration[] {
   const list: Decoration[] = [];
   let id = 0;
   const color = () => palette[Math.floor(Math.random() * palette.length)];
@@ -61,6 +87,16 @@ function generateDecorations(palette: string[]): Decoration[] {
       x: rand(0, 100), y: -2,
       delay: rand(0, 3.5), duration: rand(4, 8),
       color: color(), rotate: rand(0, 360), size: rand(8, 16), dx: rand(-80, 80),
+    });
+  }
+  const surpriseCount = Math.random() < 0.5 ? 1 : 2;
+  for (const glyph of pickN(surprises, surpriseCount)) {
+    list.push({
+      id: id++, type: "surprise",
+      x: rand(10, 90), y: rand(15, 75),
+      delay: rand(0, 2), duration: rand(8, 14),
+      color: "", rotate: 0, size: rand(48, 72), dx: 0,
+      glyph,
     });
   }
   return list;
@@ -147,6 +183,7 @@ function startLoop(ctx: AudioContext, config: MusicConfig): () => void {
 export default function Home() {
   const [phase, setPhase] = useState<Phase>("prompt");
   const [noState, setNoState] = useState<NoState>("default");
+  const [noPressCount, setNoPressCount] = useState(0);
   const [decorations, setDecorations] = useState<Decoration[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showBurst, setShowBurst] = useState(false);
@@ -171,8 +208,33 @@ export default function Home() {
   }, [theme]);
 
   const themeDef = THEMES[theme];
-  const marqueeTease = themeDef.teaseText.repeat(24);
-  const marqueeCelebrate = themeDef.celebrateMarquee.repeat(24);
+
+  const [variations, setVariations] = useState<Variations>(() => ({
+    balloon: themeDef.balloons[0],
+    star: themeDef.stars[0],
+    hero: themeDef.heroes[0],
+    teaseText: themeDef.teaseTexts[0],
+    celebrateMarquee: themeDef.celebrateMarquees[0],
+    celebrateCaption: themeDef.celebrateCaptions[0],
+    surprises: themeDef.surpriseStickers.slice(0, 1),
+  }));
+
+  useEffect(() => {
+    const def = THEMES[theme];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setVariations({
+      balloon: pickOne(def.balloons),
+      star: pickOne(def.stars),
+      hero: pickOne(def.heroes),
+      teaseText: pickOne(def.teaseTexts),
+      celebrateMarquee: pickOne(def.celebrateMarquees),
+      celebrateCaption: pickOne(def.celebrateCaptions),
+      surprises: pickN(def.surpriseStickers, Math.random() < 0.5 ? 1 : 2),
+    });
+  }, [theme]);
+
+  const marqueeTease = variations.teaseText.repeat(24);
+  const marqueeCelebrate = variations.celebrateMarquee.repeat(24);
 
   const [showShare, setShowShare] = useState(false);
   const [shareName, setShareName] = useState("");
@@ -223,19 +285,23 @@ export default function Home() {
   }, []);
 
   const handleYes = useCallback(() => {
-    setDecorations(generateDecorations(themeDef.confettiColors));
+    setDecorations(generateDecorations(themeDef.confettiColors, variations.surprises));
     setPhase("celebrating");
     setShowBurst(true);
     startSong(themeDef.music);
     setTimeout(() => setShowBurst(false), 900);
-  }, [startSong, themeDef.confettiColors, themeDef.music]);
+  }, [startSong, themeDef.confettiColors, themeDef.music, variations.surprises]);
 
   const handleNo = useCallback(() => {
     if (noState !== "default") return;
+    const nextCount = noPressCount + 1;
+    setNoPressCount(nextCount);
     setNoState("wiggling");
     setTimeout(() => setNoState("sliding"), 650);
-    setTimeout(() => setNoState("gone"), 1100);
-  }, [noState]);
+    setTimeout(() => {
+      setNoState(nextCount <= themeDef.noEgg.length ? "default" : "gone");
+    }, 1100);
+  }, [noState, noPressCount, themeDef.noEgg.length]);
 
   const toggleMusic = useCallback(() => {
     if (isPlaying) stopSong();
@@ -321,7 +387,11 @@ export default function Home() {
                     .filter(Boolean)
                     .join(" ")}
                 >
-                  {noState === "sliding" ? "Wrong device." : "No"}
+                  {noState === "sliding"
+                    ? "Wrong device."
+                    : noPressCount > 0
+                      ? themeDef.noEgg[noPressCount - 1]
+                      : "No"}
                 </button>
               )}
             </div>
@@ -355,7 +425,7 @@ export default function Home() {
               />
               {shareName.trim() && (
                 <p className="modal-preview">
-                  They&apos;ll see: <em>Happy Birthday, {shareName.trim()}! {THEMES[shareTheme].hero}</em>
+                  They&apos;ll see: <em>Happy Birthday, {shareName.trim()}! {THEMES[shareTheme].heroes[0]}</em>
                 </p>
               )}
               <button
@@ -408,7 +478,7 @@ export default function Home() {
                   "--rot": `${d.rotate}deg`,
                 } as React.CSSProperties}
               >
-                {themeDef.balloon}
+                {variations.balloon}
               </span>
             );
           }
@@ -425,7 +495,24 @@ export default function Home() {
                   animationDelay: `${d.delay}s`,
                 } as React.CSSProperties}
               >
-                {themeDef.star}
+                {variations.star}
+              </span>
+            );
+          }
+          if (d.type === "surprise") {
+            return (
+              <span
+                key={d.id}
+                className="absolute select-none anim-spin-slow"
+                style={{
+                  left: `${d.x}%`,
+                  top: `${d.y}%`,
+                  fontSize: `${d.size}px`,
+                  animationDuration: `${d.duration}s`,
+                  animationDelay: `${d.delay}s`,
+                } as React.CSSProperties}
+              >
+                {d.glyph}
               </span>
             );
           }
@@ -468,7 +555,7 @@ export default function Home() {
           role="img"
           aria-label={`${themeDef.name} celebration`}
         >
-          {themeDef.hero}
+          {variations.hero}
         </span>
         <h1
           className="anim-pop-in leading-none mb-5"
@@ -485,7 +572,7 @@ export default function Home() {
           className="text-2xl font-semibold tracking-wide anim-caption-rise"
           style={{ color: "var(--ink)" }}
         >
-          {themeDef.celebrateCaption}
+          {variations.celebrateCaption}
         </p>
       </div>
 
