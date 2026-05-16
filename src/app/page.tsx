@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import { THEMES, THEME_KEYS, isTheme, type Theme, type MusicConfig } from "./themes";
+import { DEFAULT_LOCALE, type Locale } from "./i18n/config";
+import { useLocale } from "./i18n/useLocale";
+import { LanguageSwitcher } from "./components/LanguageSwitcher";
 
 type Phase = "prompt" | "celebrating";
 type NoState = "default" | "wiggling" | "sliding" | "gone";
@@ -50,13 +54,14 @@ function pickN<T>(arr: readonly T[], n: number): T[] {
   return out;
 }
 
-function buildShareUrl(nameVal: string, themeVal: Theme): string {
+function buildShareUrl(nameVal: string, themeVal: Theme, localeVal: Locale): string {
   if (typeof window === "undefined") return "";
   const base = `${window.location.origin}${window.location.pathname}`;
   const params = new URLSearchParams();
   const trimmed = nameVal.trim();
   if (trimmed) params.set("name", trimmed);
   if (themeVal !== "default") params.set("theme", themeVal);
+  if (localeVal !== DEFAULT_LOCALE) params.set("lang", localeVal);
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 }
@@ -193,6 +198,9 @@ function startLoop(ctx: AudioContext, config: MusicConfig): () => void {
 }
 
 export default function Home() {
+  const intl = useIntl();
+  const { locale, themeCopy } = useLocale();
+
   const [phase, setPhase] = useState<Phase>("prompt");
   const [noState, setNoState] = useState<NoState>("default");
   const [noPressCount, setNoPressCount] = useState(0);
@@ -220,32 +228,34 @@ export default function Home() {
   }, [theme]);
 
   const themeDef = THEMES[theme];
+  const themeCopyCurrent = themeCopy[theme];
 
   const [variations, setVariations] = useState<Variations>(() => ({
     balloon: themeDef.balloons[0],
     star: themeDef.stars[0],
     hero: themeDef.heroes[0],
-    teaseText: themeDef.teaseTexts[0],
-    celebrateMarquee: themeDef.celebrateMarquees[0],
-    celebrateBottomMarquee: themeDef.celebrateBottomMarquees[0],
-    celebrateCaption: themeDef.celebrateCaptions[0],
+    teaseText: themeCopyCurrent.teaseTexts[0],
+    celebrateMarquee: themeCopyCurrent.celebrateMarquees[0],
+    celebrateBottomMarquee: themeCopyCurrent.celebrateBottomMarquees[0],
+    celebrateCaption: themeCopyCurrent.celebrateCaptions[0],
     surprises: themeDef.surpriseStickers.slice(0, 1),
   }));
 
   useEffect(() => {
     const def = THEMES[theme];
+    const copy = themeCopy[theme];
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setVariations({
       balloon: pickOne(def.balloons),
       star: pickOne(def.stars),
       hero: pickOne(def.heroes),
-      teaseText: pickOne(def.teaseTexts),
-      celebrateMarquee: pickOne(def.celebrateMarquees),
-      celebrateBottomMarquee: pickOne(def.celebrateBottomMarquees),
-      celebrateCaption: pickOne(def.celebrateCaptions),
+      teaseText: pickOne(copy.teaseTexts),
+      celebrateMarquee: pickOne(copy.celebrateMarquees),
+      celebrateBottomMarquee: pickOne(copy.celebrateBottomMarquees),
+      celebrateCaption: pickOne(copy.celebrateCaptions),
       surprises: pickN(def.surpriseStickers, Math.random() < 0.5 ? 1 : 2),
     });
-  }, [theme]);
+  }, [theme, themeCopy]);
 
   const marqueeTease = variations.teaseText.repeat(24);
   const marqueeCelebrate = variations.celebrateMarquee.repeat(24);
@@ -314,9 +324,9 @@ export default function Home() {
     setNoState("wiggling");
     setTimeout(() => setNoState("sliding"), 650);
     setTimeout(() => {
-      setNoState(nextCount <= themeDef.noEgg.length ? "default" : "gone");
+      setNoState(nextCount <= themeCopyCurrent.noEgg.length ? "default" : "gone");
     }, 1100);
-  }, [noState, noPressCount, themeDef.noEgg.length]);
+  }, [noState, noPressCount, themeCopyCurrent.noEgg.length]);
 
   const toggleMusic = useCallback(() => {
     if (isPlaying) stopSong();
@@ -325,18 +335,18 @@ export default function Home() {
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(buildShareUrl(shareName, shareTheme));
+      await navigator.clipboard.writeText(buildShareUrl(shareName, shareTheme, locale));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // clipboard not available
     }
-  }, [shareName, shareTheme]);
+  }, [shareName, shareTheme, locale]);
 
   useEffect(() => () => { stopSong(); }, [stopSong]);
 
-  const renderThemePicker = (selected: Theme, onPick: (t: Theme) => void, label = "Vibe") => (
-    <div className="theme-picker" role="radiogroup" aria-label="Theme">
+  const renderThemePicker = (selected: Theme, onPick: (t: Theme) => void, label = "") => (
+    <div className="theme-picker" role="radiogroup" aria-label={intl.formatMessage({ id: "theme.aria" })}>
       {label && <span className="theme-picker-label">{label}</span>}
       {THEME_KEYS.map((k) => (
         <button
@@ -344,8 +354,8 @@ export default function Home() {
           type="button"
           role="radio"
           aria-checked={selected === k}
-          aria-label={THEMES[k].name}
-          title={THEMES[k].name}
+          aria-label={themeCopy[k].name}
+          title={themeCopy[k].name}
           onClick={() => onPick(k)}
           className={`theme-swatch${selected === k ? " theme-swatch--active" : ""}`}
           style={{ background: THEMES[k].swatch }}
@@ -371,11 +381,23 @@ export default function Home() {
           <div className="card-tilt">
             <div className="card-panel anim-card-rise max-w-sm w-full text-center">
               <h1 className="headline-prompt">
-                {name ? <>{name},<br />is it your birthday?</> : <>Is it your<br />birthday?</>}
+                {name ? (
+                  <>
+                    <FormattedMessage id="prompt.title.named.line1" values={{ name }} />
+                    <br />
+                    <FormattedMessage id="prompt.title.named.line2" />
+                  </>
+                ) : (
+                  <>
+                    <FormattedMessage id="prompt.title.anon.line1" />
+                    <br />
+                    <FormattedMessage id="prompt.title.anon.line2" />
+                  </>
+                )}
               </h1>
               <div className="prompt-actions">
                 <button type="button" onClick={handleYes} className="btn-yes">
-                  Yes
+                  <FormattedMessage id="prompt.yes" />
                 </button>
                 {noState !== "gone" && (
                   <button
@@ -391,10 +413,10 @@ export default function Home() {
                       .join(" ")}
                   >
                     {noState === "sliding"
-                      ? "Wrong device."
+                      ? intl.formatMessage({ id: "prompt.wrongDevice" })
                       : noPressCount > 0
-                        ? themeDef.noEgg[noPressCount - 1]
-                        : "No"}
+                        ? themeCopyCurrent.noEgg[noPressCount - 1]
+                        : intl.formatMessage({ id: "prompt.no" })}
                   </button>
                 )}
               </div>
@@ -402,12 +424,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom-left: theme picker (matches celebration screen layout) */}
-        {!themeIsFixed && (
-          <div className="corner-bl">
-            {renderThemePicker(theme, pickTheme, "")}
-          </div>
-        )}
+        {/* Bottom-left: language switcher + theme picker */}
+        <div className="corner-bl">
+          <LanguageSwitcher />
+          {!themeIsFixed && renderThemePicker(theme, pickTheme)}
+        </div>
 
         {/* Bottom-right: share — quieter than Yes so the primary CTA wins. */}
         <button
@@ -415,7 +436,7 @@ export default function Home() {
           onClick={openShare}
           className="music-btn music-btn--share corner-br"
         >
-          🔗 Share a link
+          <FormattedMessage id="share.button" />
         </button>
         {showShare && (
           <div className="modal-backdrop" onClick={() => { setShowShare(false); setCopied(false); }}>
@@ -424,28 +445,41 @@ export default function Home() {
                 type="button"
                 className="modal-close"
                 onClick={() => { setShowShare(false); setCopied(false); }}
-                aria-label="Close"
+                aria-label={intl.formatMessage({ id: "share.modal.close" })}
               >
                 ✕
               </button>
-              <h2 className="modal-title">{THEMES[shareTheme].modalTitle}</h2>
+              <h2 className="modal-title">{themeCopy[shareTheme].modalTitle}</h2>
               <div className="modal-vibe">
-                <label className="modal-label">Pick their vibe</label>
-                {renderThemePicker(shareTheme, setShareTheme, "")}
+                <label className="modal-label">
+                  <FormattedMessage id="share.modal.vibeLabel" />
+                </label>
+                {renderThemePicker(shareTheme, setShareTheme)}
               </div>
-              <label className="modal-label" htmlFor="share-name">Who&apos;s celebrating?</label>
+              <label className="modal-label" htmlFor="share-name">
+                <FormattedMessage id="share.modal.nameLabel" />
+              </label>
               <input
                 id="share-name"
                 className="share-input"
                 type="text"
-                placeholder="Their name (optional)"
+                placeholder={intl.formatMessage({ id: "share.modal.namePlaceholder" })}
                 value={shareName}
                 onChange={(e) => setShareName(e.target.value)}
                 maxLength={40}
               />
               {shareName.trim() && (
                 <p className="modal-preview">
-                  They&apos;ll see: <em>Happy Birthday, {shareName.trim()}! {THEMES[shareTheme].heroes[0]}</em>
+                  <FormattedMessage id="share.modal.previewLead" />
+                  <em>
+                    <FormattedMessage
+                      id="share.modal.previewGreeting"
+                      values={{
+                        name: shareName.trim(),
+                        hero: THEMES[shareTheme].heroes[0],
+                      }}
+                    />
+                  </em>
                 </p>
               )}
               <button
@@ -454,14 +488,14 @@ export default function Home() {
                 onClick={handleCopy}
                 style={copied ? { background: "var(--green)" } : undefined}
               >
-                {copied ? "✓ Copied! Now send it 🎉" : "🔗 Copy link"}
+                <FormattedMessage id={copied ? "share.modal.copied" : "share.modal.copy"} />
               </button>
               <button
                 type="button"
                 className="btn-maybe-later"
                 onClick={() => { setShowShare(false); setCopied(false); }}
               >
-                Maybe later
+                <FormattedMessage id="share.modal.maybeLater" />
               </button>
             </div>
           </div>
@@ -593,33 +627,47 @@ export default function Home() {
         <span
           className="hero-glyph anim-bounce-cake select-none mb-1 block"
           role="img"
-          aria-label={`${themeDef.name} celebration`}
+          aria-label={intl.formatMessage(
+            { id: "celebrate.heroAria" },
+            { themeName: themeCopyCurrent.name },
+          )}
         >
           {variations.hero}
         </span>
         <h1 className="anim-pop-in headline-celebrate">
-          {name ? <>Happy Birthday,<br />{name}!</> : <>Happy<br />Birthday!</>}
+          {name ? (
+            <>
+              <FormattedMessage id="celebrate.title.named.line1" />
+              <br />
+              <FormattedMessage id="celebrate.title.named.line2" values={{ name }} />
+            </>
+          ) : (
+            <>
+              <FormattedMessage id="celebrate.title.anon.line1" />
+              <br />
+              <FormattedMessage id="celebrate.title.anon.line2" />
+            </>
+          )}
         </h1>
         <p className="anim-caption-rise celebrate-caption">
           {variations.celebrateCaption}
         </p>
       </div>
 
-      {/* Theme picker — hidden for recipients who arrived with a ?theme= link */}
-      {!themeIsFixed && (
-        <div className="corner-bl">
-          {renderThemePicker(theme, pickTheme, "")}
-        </div>
-      )}
+      {/* Bottom-left: language switcher + theme picker (picker hidden for ?theme= recipients) */}
+      <div className="corner-bl">
+        <LanguageSwitcher />
+        {!themeIsFixed && renderThemePicker(theme, pickTheme)}
+      </div>
 
       {/* Music toggle */}
       <button
         type="button"
         onClick={toggleMusic}
-        aria-label={isPlaying ? "Pause music" : "Play music"}
+        aria-label={intl.formatMessage({ id: isPlaying ? "music.pauseLabel" : "music.playLabel" })}
         className="music-btn corner-br"
       >
-        {isPlaying ? "♫ Pause" : "♪ Play"}
+        <FormattedMessage id={isPlaying ? "music.pause" : "music.play"} />
       </button>
     </div>
   );

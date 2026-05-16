@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fredoka, Lilita_One } from "next/font/google";
 import "./globals.css";
+import { IntlClientProvider } from "./i18n/IntlClientProvider";
 
 const fredoka = Fredoka({
   weight: ["400", "500", "600", "700"],
@@ -31,7 +32,9 @@ export default function RootLayout({
       lang="en"
       className={`${fredoka.variable} ${lilitaOne.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <IntlClientProvider>{children}</IntlClientProvider>
+      </body>
     </html>
   );
 }
