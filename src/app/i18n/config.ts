@@ -1,4 +1,4 @@
-export const LOCALES = ["en", "es-419"] as const;
+export const LOCALES = ["en", "es"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "en";
 
@@ -6,12 +6,12 @@ export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
 }
 
-// Any Spanish variant maps to Latin American Spanish — we don't ship a separate
-// peninsular bundle, so es-ES visitors get LATAM Spanish too.
+// Any Spanish variant maps to our shared Spanish bundle, including older
+// `es-419` links that may already be in circulation.
 function normalizeSpanish(tag: string): Locale | null {
   const lower = tag.toLowerCase();
   if (lower === "es" || lower.startsWith("es-") || lower.startsWith("es_")) {
-    return "es-419";
+    return "es";
   }
   return null;
 }

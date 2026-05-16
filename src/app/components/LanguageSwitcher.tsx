@@ -4,7 +4,7 @@ import { LOCALES, type Locale } from "../i18n/config";
 
 const LABELS: Record<Locale, { short: string; full: string }> = {
   en: { short: "EN", full: "English" },
-  "es-419": { short: "ES", full: "Español" },
+  es: { short: "ES", full: "Español" },
 };
 
 interface Props {
