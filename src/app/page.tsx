@@ -438,11 +438,12 @@ export default function Home() {
           </div>
         )}
 
-        {/* Bottom-right: share — quieter than Yes so the primary CTA wins. */}
+        {/* Bottom-right: share — author's primary action, sticker-styled to
+            stay in the party-store aesthetic without competing with Yes. */}
         <button
           type="button"
           onClick={openShare}
-          className="music-btn music-btn--share corner-br"
+          className="btn-share-trigger corner-br"
         >
           <FormattedMessage id="share.button" />
         </button>
@@ -483,15 +484,20 @@ export default function Home() {
                 maxLength={40}
               />
               {shareName.trim() && (
-                <p className="modal-preview">
-                  <FormattedMessage id="share.modal.previewLead" />
-                  <em>
+                <div className="modal-preview-card">
+                  <span className="modal-preview-stamp">
+                    <FormattedMessage id="share.modal.previewStamp" />
+                  </span>
+                  <em
+                    key={`${shareLocale}-${shareTheme}`}
+                    className="modal-preview-greeting"
+                  >
                     {formatTemplate(MESSAGES[shareLocale]["share.modal.previewGreeting"], {
                       name: shareName.trim(),
                       hero: THEMES[shareTheme].heroes[0],
                     })}
                   </em>
-                </p>
+                </div>
               )}
               <button
                 type="button"

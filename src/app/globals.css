@@ -172,11 +172,13 @@ body {
   filter: drop-shadow(3px 3px 0 var(--ink));
 }
 
-/* Starburst badge — sits behind the headline stack. */
+/* Starburst badge — oversized so it bleeds past the screen edges, framing
+   the headline like a POW that's too big to contain. Lowered opacity lets
+   the headline punch through as the focal element. */
 .hero-starburst {
   position: absolute;
-  width: clamp(20rem, 78vw, 34rem);
-  height: clamp(20rem, 78vw, 34rem);
+  width: clamp(28rem, 110vw, 56rem);
+  height: clamp(28rem, 110vw, 56rem);
   top: 50%;
   left: 50%;
   /* Base translate so the starburst stays centered even when the spin
@@ -190,7 +192,7 @@ body {
   filter: drop-shadow(5px 5px 0 var(--ink));
   pointer-events: none;
   animation: starburst-spin 34s linear infinite;
-  opacity: 0.95;
+  opacity: 0.7;
 }
 
 /* ─── Celebration caption (rubber-stamp tone) ─── */
@@ -335,10 +337,40 @@ body {
   box-shadow: 1px 1px 0 var(--ink);
 }
 
-/* Share variant — quiet, ink-on-cream so it doesn't compete with Yes. */
-.music-btn--share {
-  background: var(--ink);
-  color: var(--cream);
+/* Share trigger — author's primary CTA on the prompt screen. Sticker-styled
+   (tilted, cream + ink border + hard offset shadow) so it stays in the
+   party-store world instead of reading as a SaaS button. */
+.btn-share-trigger {
+  background: var(--cream);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  padding: 0.7rem 1.25rem;
+  font-size: var(--text-md);
+  font-weight: 400;
+  font-family: var(--font-lilita, sans-serif);
+  letter-spacing: 0.01em;
+  line-height: 1;
+  box-shadow: 4px 4px 0 var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+  transform: rotate(-3deg);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.btn-share-trigger:hover {
+  transform: rotate(-2deg) translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.btn-share-trigger:active {
+  transform: rotate(-3deg) translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.btn-share-trigger:focus-visible {
+  outline: 3px dashed var(--ink);
+  outline-offset: 3px;
 }
 
 /* ─── Touch & focus ─── */
@@ -594,21 +626,55 @@ body {
   outline-offset: 2px;
 }
 
-.modal-preview {
-  margin-top: 0.75rem;
-  font-size: var(--text-sm);
-  font-weight: 500;
-  line-height: 1.45;
-  color: var(--ink-soft);
-  animation: preview-in 0.2s cubic-bezier(0.25, 1, 0.5, 1) both;
+/* Preview card — the proof of what the recipient gets. Promoted to a
+   focal sticker (cream surface, ink border, hard shadow, tilted) with
+   a stamp tag in the corner. The greeting re-mounts on locale/theme/name
+   changes so it visibly swaps via preview-swap. */
+.modal-preview-card {
+  position: relative;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  padding: 1.1rem 1rem 0.95rem;
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 4px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: rotate(-1.25deg);
+  animation: preview-in 0.25s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
-.modal-preview em {
+.modal-preview-stamp {
+  position: absolute;
+  top: -0.55rem;
+  right: -0.55rem;
+  background: var(--red);
+  color: var(--cream);
+  font-family: var(--font-lilita, sans-serif);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-stamp);
+  padding: 0.18rem 0.5rem;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  transform: rotate(8deg);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.modal-preview-greeting {
+  display: block;
   font-style: normal;
   font-family: var(--font-lilita, sans-serif);
-  font-size: var(--text-base);
+  font-size: var(--text-md);
+  line-height: 1.15;
   letter-spacing: var(--tracking-tight);
   color: var(--ink);
+  text-align: center;
+  text-wrap: balance;
+  animation: preview-swap 0.32s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes preview-swap {
+  from { opacity: 0; transform: scale(0.9) rotate(-1deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0); }
 }
 
 .btn-copy-link {
@@ -732,7 +798,7 @@ body {
 
 /* Mirror modal-vibe spacing for the recipient-language picker. */
 .modal-lang {
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
   margin-bottom: 0.25rem;
 }
 
@@ -746,34 +812,38 @@ body {
 }
 
 /* ─── Language switcher ─── */
+/* Sized to match .theme-picker exactly so the two pickers read as siblings
+   when stacked in the share modal. Same pill density, same 44px tap targets,
+   same per-button ink border. */
 .lang-switcher {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
   background: var(--cream);
   border: 3px solid var(--ink);
   border-radius: 999px;
   box-shadow: 3px 3px 0 var(--ink);
-  padding: 2px;
-  overflow: hidden;
 }
 
 .lang-switcher-btn {
+  height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0 0.85rem;
   font-family: var(--font-lilita, sans-serif);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-stamp);
+  font-size: var(--text-sm);
+  letter-spacing: 0.04em;
   color: var(--ink);
-  background: transparent;
-  border: none;
+  background: var(--cream);
+  border: 2px solid var(--ink);
   border-radius: 999px;
-  padding: 0.4rem 0.7rem;
-  min-width: 2.4rem;
   cursor: pointer;
   touch-action: manipulation;
-  transition: background 0.1s, color 0.1s;
+  transition: background 0.1s, color 0.1s, transform 0.1s;
 }
 
 .lang-switcher-btn:hover {
-  background: color-mix(in oklch, var(--ink) 12%, transparent);
+  transform: translateY(-1px);
 }
 
 .lang-switcher-btn--active {
@@ -804,7 +874,8 @@ body {
   .burst-ring,
   .modal-backdrop,
   .modal-card,
-  .modal-preview {
+  .modal-preview-card,
+  .modal-preview-greeting {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
