@@ -5,7 +5,12 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { THEMES, THEME_KEYS, isTheme, type Theme, type MusicConfig } from "./themes";
 import { DEFAULT_LOCALE, type Locale } from "./i18n/config";
 import { useLocale } from "./i18n/useLocale";
+import { MESSAGES } from "./i18n/bundles";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
+
+function formatTemplate(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? `{${key}}`);
+}
 
 type Phase = "prompt" | "celebrating";
 type NoState = "default" | "wiggling" | "sliding" | "gone";
@@ -264,12 +269,14 @@ export default function Home() {
   const [showShare, setShowShare] = useState(false);
   const [shareName, setShareName] = useState("");
   const [shareTheme, setShareTheme] = useState<Theme>(theme);
+  const [shareLocale, setShareLocale] = useState<Locale>(locale);
   const [copied, setCopied] = useState(false);
 
   const openShare = useCallback(() => {
     setShareTheme(theme);
+    setShareLocale(locale);
     setShowShare(true);
-  }, [theme]);
+  }, [theme, locale]);
 
   const pickTheme = useCallback((next: Theme) => {
     setTheme(next);
@@ -335,13 +342,13 @@ export default function Home() {
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(buildShareUrl(shareName, shareTheme, locale));
+      await navigator.clipboard.writeText(buildShareUrl(shareName, shareTheme, shareLocale));
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // clipboard not available
     }
-  }, [shareName, shareTheme, locale]);
+  }, [shareName, shareTheme, shareLocale]);
 
   useEffect(() => () => { stopSong(); }, [stopSong]);
 
@@ -424,11 +431,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom-left: language switcher + theme picker */}
-        <div className="corner-bl">
-          <LanguageSwitcher />
-          {!themeIsFixed && renderThemePicker(theme, pickTheme)}
-        </div>
+        {/* Bottom-left: theme picker (hidden for ?theme= recipients) */}
+        {!themeIsFixed && (
+          <div className="corner-bl">
+            {renderThemePicker(theme, pickTheme)}
+          </div>
+        )}
 
         {/* Bottom-right: share — quieter than Yes so the primary CTA wins. */}
         <button
@@ -456,6 +464,12 @@ export default function Home() {
                 </label>
                 {renderThemePicker(shareTheme, setShareTheme)}
               </div>
+              <div className="modal-lang">
+                <label className="modal-label">
+                  <FormattedMessage id="share.modal.langLabel" />
+                </label>
+                <LanguageSwitcher value={shareLocale} onChange={setShareLocale} />
+              </div>
               <label className="modal-label" htmlFor="share-name">
                 <FormattedMessage id="share.modal.nameLabel" />
               </label>
@@ -472,13 +486,10 @@ export default function Home() {
                 <p className="modal-preview">
                   <FormattedMessage id="share.modal.previewLead" />
                   <em>
-                    <FormattedMessage
-                      id="share.modal.previewGreeting"
-                      values={{
-                        name: shareName.trim(),
-                        hero: THEMES[shareTheme].heroes[0],
-                      }}
-                    />
+                    {formatTemplate(MESSAGES[shareLocale]["share.modal.previewGreeting"], {
+                      name: shareName.trim(),
+                      hero: THEMES[shareTheme].heroes[0],
+                    })}
                   </em>
                 </p>
               )}
@@ -654,11 +665,12 @@ export default function Home() {
         </p>
       </div>
 
-      {/* Bottom-left: language switcher + theme picker (picker hidden for ?theme= recipients) */}
-      <div className="corner-bl">
-        <LanguageSwitcher />
-        {!themeIsFixed && renderThemePicker(theme, pickTheme)}
-      </div>
+      {/* Bottom-left: theme picker (hidden for ?theme= recipients) */}
+      {!themeIsFixed && (
+        <div className="corner-bl">
+          {renderThemePicker(theme, pickTheme)}
+        </div>
+      )}
 
       {/* Music toggle */}
       <button

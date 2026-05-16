@@ -4,19 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 import { IntlProvider } from "react-intl";
 import { DEFAULT_LOCALE, type Locale } from "./config";
 import { detectLocale } from "./config";
-import { messages as enMessages, themeCopy as enThemeCopy } from "./messages/en";
-import { messages as esMessages, themeCopy as esThemeCopy } from "./messages/es-419";
-import type { ThemeCopy } from "./messages/en";
-
-const MESSAGES: Record<Locale, Record<string, string>> = {
-  en: enMessages,
-  "es-419": esMessages,
-};
-
-const THEME_COPY: Record<Locale, Record<string, ThemeCopy>> = {
-  en: enThemeCopy,
-  "es-419": esThemeCopy,
-};
+import { MESSAGES, THEME_COPY, type ThemeCopy } from "./bundles";
 
 interface LocaleContextValue {
   locale: Locale;

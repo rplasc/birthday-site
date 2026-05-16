@@ -21,6 +21,7 @@ export const messages: Record<string, string> = {
 
   "share.button": "🔗 Share a link",
   "share.modal.vibeLabel": "Pick their vibe",
+  "share.modal.langLabel": "Pick their language",
   "share.modal.nameLabel": "Who's celebrating?",
   "share.modal.namePlaceholder": "Their name (optional)",
   "share.modal.previewLead": "They'll see: ",
@@ -42,7 +43,6 @@ export const messages: Record<string, string> = {
   "music.pauseLabel": "Pause music",
 
   "theme.aria": "Theme",
-  "lang.switcher.aria": "Language",
 };
 
 export const themeCopy: Record<Theme, ThemeCopy> = {

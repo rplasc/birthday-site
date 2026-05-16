@@ -1,35 +1,31 @@
 "use client";
 
-import { useIntl } from "react-intl";
 import { LOCALES, type Locale } from "../i18n/config";
-import { useLocale } from "../i18n/useLocale";
 
-const LABELS: Record<Locale, string> = {
-  en: "EN",
-  "es-419": "ES",
+const LABELS: Record<Locale, { short: string; full: string }> = {
+  en: { short: "EN", full: "English" },
+  "es-419": { short: "ES", full: "Español" },
 };
 
-export function LanguageSwitcher() {
-  const intl = useIntl();
-  const { locale, setLocale } = useLocale();
+interface Props {
+  value: Locale;
+  onChange: (next: Locale) => void;
+}
 
+export function LanguageSwitcher({ value, onChange }: Props) {
   return (
-    <div
-      className="lang-switcher"
-      role="radiogroup"
-      aria-label={intl.formatMessage({ id: "lang.switcher.aria" })}
-    >
+    <div className="lang-switcher" role="radiogroup">
       {LOCALES.map((l) => (
         <button
           key={l}
           type="button"
           role="radio"
-          aria-checked={locale === l}
-          aria-label={LABELS[l]}
-          onClick={() => setLocale(l)}
-          className={`lang-switcher-btn${locale === l ? " lang-switcher-btn--active" : ""}`}
+          aria-checked={value === l}
+          aria-label={LABELS[l].full}
+          onClick={() => onChange(l)}
+          className={`lang-switcher-btn${value === l ? " lang-switcher-btn--active" : ""}`}
         >
-          {LABELS[l]}
+          {LABELS[l].short}
         </button>
       ))}
     </div>

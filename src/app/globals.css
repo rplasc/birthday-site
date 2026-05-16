@@ -244,10 +244,6 @@ body {
   bottom: var(--space-corner);
   left: var(--space-corner);
   z-index: 30;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-xs);
 }
 
 .corner-br {
@@ -734,6 +730,21 @@ body {
   margin-top: 1rem;
 }
 
+/* Mirror modal-vibe spacing for the recipient-language picker. */
+.modal-lang {
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.modal-lang .lang-switcher {
+  width: fit-content;
+  margin-top: 0.35rem;
+}
+
+.modal-lang + .modal-label {
+  margin-top: 1rem;
+}
+
 /* ─── Language switcher ─── */
 .lang-switcher {
   display: inline-flex;
@@ -762,7 +773,7 @@ body {
 }
 
 .lang-switcher-btn:hover {
-  background: var(--bg-dot);
+  background: color-mix(in oklch, var(--ink) 12%, transparent);
 }
 
 .lang-switcher-btn--active {
