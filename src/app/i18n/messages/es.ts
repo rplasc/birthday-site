@@ -46,7 +46,7 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
     ],
     celebrateMarquees: [
       "🎉 ¡FELIZ CUMPLE! 🎉   ",
-      "🥳 MODO FIESTA ACTIVADO 🥳   ",
+      "🥳 TÚ ERES LA FIESTA 🥳   ",
       "🎂 OTRA VUELTA AL SOL 🎂   ",
     ],
     celebrateBottomMarquees: [
@@ -55,7 +55,7 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
       "🪩 LICENCIA PARA BAILAR 🪩   ",
     ],
     celebrateCaptions: [
-      "Modo fiesta certificado.",
+      "El ambiente es obligatorio.",
       "Permiso de fiesta: APROBADO.",
       "Nivel de confeti: crítico.",
     ],
@@ -66,7 +66,7 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
     name: "Princesa",
     teaseTexts: [
       "💖  Es tu día especial...  💖     ",
-      "👑  Se acerca una ocasión real...  👑     ",
+      "👑  La corona ha sido avistada...  👑     ",
       "🌸  Algo brillante hoy...  🌸     ",
     ],
     celebrateMarquees: [
@@ -80,7 +80,7 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
       "💝 SAQUEN LA ESCARCHA 💝   ",
     ],
     celebrateCaptions: [
-      "Fiesta de princesa certificada.",
+      "Hoy eres la protagonista.",
       "Tiara obligatoria desde ahora.",
       "Permiso de brillo: concedido.",
     ],
@@ -92,24 +92,24 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
     teaseTexts: [
       "🌿  Un día dulce para celebrar...  🌿     ",
       "🌸  Algo está floreciendo hoy...  🌸     ",
-      "🦋  Una pequeña ocasión gentil...  🦋     ",
+      "🦋  Las mariposas ya salieron...  🦋     ",
     ],
     celebrateMarquees: [
       "🌻 ¡Feliz cumpleaños! 🌻   ",
       "🦋 Fiesta en el jardín 🦋   ",
-      "🌷 Modo florecer activado 🌷   ",
+      "🌷 Todo está floreciendo 🌷   ",
     ],
     celebrateBottomMarquees: [
       "🌿 CRECE LIBRE HOY 🌿   ",
       "🐝 OCUPADAS CELEBRANDO 🐝   ",
-      "🌷 PODER PÉTALO ACTIVADO 🌷   ",
+      "🌷 PODER PÉTALO DESBLOQUEADO 🌷   ",
     ],
     celebrateCaptions: [
-      "Fiesta de jardín certificada.",
+      "Las abejas también vinieron.",
       "Conteo de polen: festivo.",
       "Las flores hacen su mejor esfuerzo.",
     ],
-    noEgg: ["¿Seguro?", "El jardín ya está listo…", "Último pétalo."],
+    noEgg: ["¿Seguro?", "El jardín ya está listo…", "No pises los tulipanes."],
     modalTitle: "¡Manda el jardín! 🌸",
   },
   lavender: {
@@ -130,11 +130,11 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
       "💫 DESEO RECIBIDO 💫   ",
     ],
     celebrateCaptions: [
-      "Fiesta estelar certificada.",
+      "El universo llamó. Es para ti.",
       "Deseo concedido (pendiente de revisión).",
       "Alineación cósmica: perfecta.",
     ],
-    noEgg: ["Las estrellas dicen que no…", "¿Los planetas están seguros?", "Último deseo."],
+    noEgg: ["Las estrellas dicen que no…", "Mercurio está retrógrado, igual.", "Último deseo."],
     modalTitle: "¡Manda la magia! ✨",
   },
 };

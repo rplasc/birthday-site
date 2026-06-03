@@ -50,12 +50,12 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
     name: "Party",
     teaseTexts: [
       "✨  It's that time of year...  ✨     ",
-      "🎉  Something's up today...  🎉     ",
+      "🎉  Big day incoming...  🎉     ",
       "🎂  A very specific kind of day...  🎂     ",
     ],
     celebrateMarquees: [
       "🎉 HAPPY BIRTHDAY! 🎉   ",
-      "🥳 PARTY MODE ENGAGED 🥳   ",
+      "🥳 YOU ARE THE PARTY 🥳   ",
       "🎂 ANOTHER TRIP AROUND THE SUN 🎂   ",
     ],
     celebrateBottomMarquees: [
@@ -64,7 +64,7 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
       "🪩 GROOVE LICENSE GRANTED 🪩   ",
     ],
     celebrateCaptions: [
-      "Certified party mode activated.",
+      "The vibe is mandatory.",
       "Party permit: APPROVED.",
       "Confetti levels: critical.",
     ],
@@ -75,7 +75,7 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
     name: "Princess",
     teaseTexts: [
       "💖  It's your special day...  💖     ",
-      "👑  A royal occasion approaches...  👑     ",
+      "👑  The crown has been sighted...  👑     ",
       "🌸  Something sparkly today...  🌸     ",
     ],
     celebrateMarquees: [
@@ -89,7 +89,7 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
       "💝 BRING THE GLITTER 💝   ",
     ],
     celebrateCaptions: [
-      "Certified princess party activated.",
+      "You're the main character today.",
       "Tiara required from this point on.",
       "Sparkle clearance: granted.",
     ],
@@ -101,24 +101,24 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
     teaseTexts: [
       "🌿  A sweet day to celebrate...  🌿     ",
       "🌸  Something's blooming today...  🌸     ",
-      "🦋  A gentle little occasion...  🦋     ",
+      "🦋  The butterflies are out...  🦋     ",
     ],
     celebrateMarquees: [
       "🌻 Happy Birthday! 🌻   ",
       "🦋 Garden party in progress 🦋   ",
-      "🌷 Bloom mode engaged 🌷   ",
+      "🌷 Everything's in bloom 🌷   ",
     ],
     celebrateBottomMarquees: [
       "🌿 GROW WILD TODAY 🌿   ",
       "🐝 BUSY CELEBRATING 🐝   ",
-      "🌷 PETAL POWER ENGAGED 🌷   ",
+      "🌷 PETAL POWER UNLOCKED 🌷   ",
     ],
     celebrateCaptions: [
-      "Certified garden party activated.",
+      "The bees are here for it.",
       "Pollen count: festive.",
       "The flowers are doing their best.",
     ],
-    noEgg: ["You sure?", "The garden's already set up…", "Last petal."],
+    noEgg: ["You sure?", "The garden's already set up…", "Don't step on the tulips."],
     modalTitle: "Send the bloom! 🌸",
   },
   lavender: {
@@ -139,11 +139,11 @@ export const themeCopy: Record<Theme, ThemeCopy> = {
       "💫 WISH RECEIVED 💫   ",
     ],
     celebrateCaptions: [
-      "Certified stardust party activated.",
+      "The universe called. It's for you.",
       "Wish granted (pending review).",
       "Cosmic alignment: perfect.",
     ],
-    noEgg: ["The stars say otherwise…", "Are the planets sure?", "Last wish."],
+    noEgg: ["The stars say otherwise…", "Mercury's retrograde though.", "Last wish."],
     modalTitle: "Send the magic! ✨",
   },
 };
