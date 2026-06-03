@@ -27,6 +27,7 @@ interface Decoration {
   size: number;
   dx: number;
   glyph?: string;
+  easing?: string;
 }
 
 interface Variations {
@@ -42,6 +43,12 @@ interface Variations {
 
 function rand(min: number, max: number) {
   return min + Math.random() * (max - min);
+}
+
+function randLinear(): string {
+  const mid = parseFloat(rand(0.2, 0.85).toFixed(2));
+  const t = Math.round(rand(20, 65));
+  return `linear(0, ${mid} ${t}%, 1)`;
 }
 
 function pickOne<T>(arr: readonly T[]): T {
@@ -108,7 +115,7 @@ function generateDecorations(palette: string[], surprises: string[]): Decoration
       id: id++, type: "confetti",
       x: rand(0, 100), y: -2,
       delay: rand(0, 3.5), duration: rand(4, 8),
-      color: color(), rotate: rand(0, 360), size: rand(8, 16), dx: rand(-80, 80),
+      color: color(), rotate: rand(0, 360), size: rand(8, 16), dx: rand(-80, 80), easing: randLinear(),
     });
   }
   const surpriseCount = Math.random() < 0.5 ? 1 : 2;
@@ -207,6 +214,7 @@ export default function Home() {
   const { locale, themeCopy } = useLocale();
 
   const [phase, setPhase] = useState<Phase>("prompt");
+  const [isExiting, setIsExiting] = useState(false);
   const [noState, setNoState] = useState<NoState>("default");
   const [noPressCount, setNoPressCount] = useState(0);
   const [decorations, setDecorations] = useState<Decoration[]>([]);
@@ -267,16 +275,33 @@ export default function Home() {
   const marqueeCelebrateBottom = variations.celebrateBottomMarquee.repeat(24);
 
   const [showShare, setShowShare] = useState(false);
+  const [isModalClosing, setIsModalClosing] = useState(false);
+  const modalClosingRef = useRef(false);
   const [shareName, setShareName] = useState("");
   const [shareTheme, setShareTheme] = useState<Theme>(theme);
   const [shareLocale, setShareLocale] = useState<Locale>(locale);
   const [copied, setCopied] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [isPreviewClosing, setIsPreviewClosing] = useState(false);
 
   const openShare = useCallback(() => {
     setShareTheme(theme);
     setShareLocale(locale);
     setShowShare(true);
   }, [theme, locale]);
+
+  const closeShare = useCallback(() => {
+    if (modalClosingRef.current) return;
+    modalClosingRef.current = true;
+    setIsModalClosing(true);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setTimeout(() => {
+      setShowShare(false);
+      setIsModalClosing(false);
+      setCopied(false);
+      modalClosingRef.current = false;
+    }, reducedMotion ? 0 : 200);
+  }, []);
 
   const pickTheme = useCallback((next: Theme) => {
     setTheme(next);
@@ -317,11 +342,16 @@ export default function Home() {
   }, []);
 
   const handleYes = useCallback(() => {
-    setDecorations(generateDecorations(themeDef.confettiColors, variations.surprises));
-    setPhase("celebrating");
-    setShowBurst(true);
-    startSong(themeDef.music);
-    setTimeout(() => setShowBurst(false), 900);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const exitMs = reducedMotion ? 0 : 400;
+    setIsExiting(true);
+    setTimeout(() => {
+      setDecorations(generateDecorations(themeDef.confettiColors, variations.surprises));
+      setPhase("celebrating");
+      setShowBurst(true);
+      startSong(themeDef.music);
+      setTimeout(() => setShowBurst(false), 900);
+    }, exitMs);
   }, [startSong, themeDef.confettiColors, themeDef.music, variations.surprises]);
 
   const handleNo = useCallback(() => {
@@ -351,6 +381,33 @@ export default function Home() {
   }, [shareName, shareTheme, shareLocale]);
 
   useEffect(() => () => { stopSong(); }, [stopSong]);
+
+  // Reset preview when modal fully closes
+  useEffect(() => {
+    if (!showShare) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowPreview(false);
+      setIsPreviewClosing(false);
+    }
+  }, [showShare]);
+
+  // Animate preview card in/out as name field fills and clears
+  useEffect(() => {
+    const filled = !!shareName.trim();
+    if (filled) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setShowPreview(true);
+      setIsPreviewClosing(false);
+    } else if (showPreview && !isPreviewClosing) {
+      setIsPreviewClosing(true);
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const t = setTimeout(() => {
+        setShowPreview(false);
+        setIsPreviewClosing(false);
+      }, reducedMotion ? 0 : 200);
+      return () => clearTimeout(t);
+    }
+  }, [shareName, showPreview, isPreviewClosing]);
 
   const renderThemePicker = (selected: Theme, onPick: (t: Theme) => void, label = "") => (
     <div className="theme-picker" role="radiogroup" aria-label={intl.formatMessage({ id: "theme.aria" })}>
@@ -385,7 +442,7 @@ export default function Home() {
         {/* Center card — intentionally surrounded by empty dotted space.
             The party is "off" here. All sticker chaos lives on the celebration screen. */}
         <div className="flex flex-1 items-center justify-center px-6 py-12 relative z-10">
-          <div className="card-tilt">
+          <div className="card-tilt" {...(isExiting ? { "data-exiting": "" } : {})}>
             <div className="card-panel anim-card-rise max-w-sm w-full text-center">
               <h1 className="headline-prompt">
                 {name ? (
@@ -447,13 +504,13 @@ export default function Home() {
         >
           <FormattedMessage id="share.button" />
         </button>
-        {showShare && (
-          <div className="modal-backdrop" onClick={() => { setShowShare(false); setCopied(false); }}>
-            <div className="card-panel modal-card" onClick={(e) => e.stopPropagation()}>
+        {(showShare || isModalClosing) && (
+          <div className="modal-backdrop" data-closing={isModalClosing ? "" : undefined} onClick={closeShare}>
+            <div className="card-panel modal-card" data-closing={isModalClosing ? "" : undefined} onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
                 className="modal-close"
-                onClick={() => { setShowShare(false); setCopied(false); }}
+                onClick={closeShare}
                 aria-label={intl.formatMessage({ id: "share.modal.close" })}
               >
                 ✕
@@ -483,8 +540,8 @@ export default function Home() {
                 onChange={(e) => setShareName(e.target.value)}
                 maxLength={40}
               />
-              {shareName.trim() && (
-                <div className="modal-preview-card">
+              {showPreview && (
+                <div className="modal-preview-card" data-closing={isPreviewClosing ? "" : undefined}>
                   <span className="modal-preview-stamp">
                     <FormattedMessage id="share.modal.previewStamp" />
                   </span>
@@ -501,16 +558,21 @@ export default function Home() {
               )}
               <button
                 type="button"
-                className="btn-copy-link"
+                className={`btn-copy-link${copied ? " btn-copy-link--copied" : ""}`}
                 onClick={handleCopy}
-                style={copied ? { background: "var(--green)" } : undefined}
+                aria-label={intl.formatMessage({ id: copied ? "share.modal.copied" : "share.modal.copy" })}
               >
-                <FormattedMessage id={copied ? "share.modal.copied" : "share.modal.copy"} />
+                <span className="btn-copy-link__label btn-copy-link__label--default" aria-hidden="true">
+                  <FormattedMessage id="share.modal.copy" />
+                </span>
+                <span className="btn-copy-link__label btn-copy-link__label--copied" aria-hidden="true">
+                  <FormattedMessage id="share.modal.copied" />
+                </span>
               </button>
               <button
                 type="button"
                 className="btn-maybe-later"
-                onClick={() => { setShowShare(false); setCopied(false); }}
+                onClick={closeShare}
               >
                 <FormattedMessage id="share.modal.maybeLater" />
               </button>
@@ -613,6 +675,7 @@ export default function Home() {
                 animationDelay: `${d.delay}s`,
                 "--rot": `${d.rotate}deg`,
                 "--dx": `${d.dx}px`,
+                "--easing": d.easing,
               } as React.CSSProperties}
             />
           );
@@ -683,9 +746,14 @@ export default function Home() {
         type="button"
         onClick={toggleMusic}
         aria-label={intl.formatMessage({ id: isPlaying ? "music.pauseLabel" : "music.playLabel" })}
-        className="music-btn corner-br"
+        className={`music-btn corner-br${isPlaying ? " music-btn--playing" : ""}`}
       >
-        <FormattedMessage id={isPlaying ? "music.pause" : "music.play"} />
+        <span className="music-btn__label music-btn__label--play" aria-hidden="true">
+          <FormattedMessage id="music.play" />
+        </span>
+        <span className="music-btn__label music-btn__label--pause" aria-hidden="true">
+          <FormattedMessage id="music.pause" />
+        </span>
       </button>
     </div>
   );
